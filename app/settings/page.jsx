@@ -5,11 +5,11 @@ import Button from "@/components/Button";
 import { useState, useEffect } from "react";
 import { FaBuilding, FaUsers } from "react-icons/fa";
 import { FaShield } from "react-icons/fa6";
-import { FiShield, FiUsers, FiSettings, FiEdit2, FiTrash2, FiX, FiSave } from "react-icons/fi";
+import { FiShield, FiUsers, FiEdit2, FiX, FiSave } from "react-icons/fi";
 import { useToast } from '@/context/toastContext'
 import Loader from "@/components/Loader";
+import { LEAVETYPE } from '@/constant/constant';
 
-const LEAVETYPE = ['annual', 'sick', 'personal', 'maternity', 'paternity', 'compassionate', 'unpaid', 'emergency'];
 
 export default function Settings() {
   const [loading, setLoading] = useState(true);

@@ -80,9 +80,9 @@ const userSchema = new mongoose.Schema({
     },
     phoneNumber: String,
     emergencyContact: {
-      emergencyName: String,
-      emergencyRelationship: String,
-      emergencyPhone: String
+      name: String,
+      relationship: String,
+      phone: String
     }
   },
   preferences: {

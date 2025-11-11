@@ -26,8 +26,6 @@ export const POST = withErrorHandler(async (req) => {
     { strict: false } // This allows saving fields not in schema
   );
 
-  console.log('Update result:', result);
-
   if (result.matchedCount === 0) throw new Error('User does not exist', 404);
 
   // Fetch the updated user

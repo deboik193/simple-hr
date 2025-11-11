@@ -69,3 +69,7 @@ export const forgotPassword = async (data) => {
 export const resetPassword = async (data) => {
   return await fetchClient.post("/api/users/reset-password", data);
 };
+
+export const registerUser = async (data) => {
+  return await fetchClient.post("/api/users/employee", data);
+};

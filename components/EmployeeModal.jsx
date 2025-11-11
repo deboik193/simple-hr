@@ -2,22 +2,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiX, FiUser, FiMail, FiPhone, FiBriefcase, FiCalendar, FiAward, FiMapPin, FiHeart, FiShield } from 'react-icons/fi';
+import { FiX, FiUser, FiMail, FiPhone, FiBriefcase, FiCalendar, FiAward, FiMapPin, FiHeart } from 'react-icons/fi';
 import Button from './Button';
-const LEAVETYPE = ['annual', 'sick', 'personal', 'maternity', 'paternity', 'compasonate', 'unpaid', 'emergency'];
+import { LEAVETYPE } from '@/constant/constant';
+import { ROLE } from '@/constant/constant';
+import { getBranch, getDepartment } from '@/api';
 
-export default function EmployeeModal({ employee, onSave, onClose }) {
+export default function EmployeeModal({ employee, onSave, onClose, loading }) {
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     role: 'employee',
     department: 'Engineering',
     position: '',
     employmentType: 'full-time',
     joinDate: new Date().toISOString().split('T')[0],
-    phone: '',
     branch: 'New York',
-    level: 'L1',
+    levels: 'L1',
     personalInfo: {
       dateOfBirth: '',
       phoneNumber: '',
@@ -26,32 +27,39 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
         relationship: '',
         phone: ''
       }
-    },
-    leaveBalance: LEAVETYPE.reduce((acc, type) => {
-      acc[type] = 0;
-      return acc;
-    }, {}),
-    preferences: {
-      notifications: true,
-      autoRelief: false
     }
   });
-
+  const [branches, setBranches] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [errors, setErrors] = useState({});
+
+  const getDepartments = async () => {
+    const fetchDept = await getDepartment()
+    setDepartments(fetchDept.data);
+  }
+
+  const getBranches = async () => {
+    const fetchBranch = await getBranch()
+    setBranches(fetchBranch.data);
+  }
+
+  useEffect(() => {
+    getDepartments();
+    getBranches();
+  }, []);
 
   useEffect(() => {
     if (employee) {
       setFormData({
-        name: employee.name,
+        fullName: employee.fullName,
         email: employee.email,
         role: employee.role,
         department: employee.department,
         position: employee.position,
         employmentType: employee.employmentType,
         joinDate: employee.joinDate.split('T')[0],
-        phone: employee.phone || '',
         branch: employee.branch || 'New York',
-        level: employee.level || 'L1',
+        levels: employee.levels || 'L1',
         personalInfo: {
           dateOfBirth: employee.personalInfo?.dateOfBirth?.split('T')[0] || '',
           phoneNumber: employee.personalInfo?.phoneNumber || '',
@@ -60,9 +68,7 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
             relationship: employee.personalInfo?.emergencyContact?.relationship || '',
             phone: employee.personalInfo?.emergencyContact?.phone || ''
           }
-        },
-        leaveBalance: employee.leaveBalance,
-        preferences: employee.preferences
+        }
       });
     }
   }, [employee]);
@@ -70,7 +76,7 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
+    if (!formData.fullName.trim()) {
       newErrors.name = 'Name is required';
     }
 
@@ -133,29 +139,6 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
     }
   };
 
-  const handleLeaveBalanceChange = (leaveType, value) => {
-    setFormData(prev => ({
-      ...prev,
-      leaveBalance: {
-        ...prev.leaveBalance,
-        [leaveType]: parseInt(value) || 0
-      }
-    }));
-  };
-
-  const getLeaveTypeDisplay = (type) => {
-    const displayNames = {
-      annual: 'Annual Leave',
-      sick: 'Sick Leave',
-      personal: 'Personal Leave',
-      maternity: 'Maternity Leave',
-      paternity: 'Paternity Leave',
-      emergency: 'Emergency Leave',
-      unpaid: 'Unpaid Leave'
-    };
-    return displayNames[type] || type;
-  };
-
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -190,8 +173,8 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
                   <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
+                    value={formData.fullName}
+                    onChange={(e) => handleChange('fullName', e.target.value)}
                     className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.name ? 'border-red-300' : 'border-gray-300'
                       }`}
                     placeholder="Enter full name"
@@ -229,10 +212,9 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
                   onChange={(e) => handleChange('role', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  <option value="employee">Employee</option>
-                  <option value="manager">Manager</option>
-                  <option value="hr">HR</option>
-                  <option value="admin">Admin</option>
+                  {ROLE.map((role) => (
+                    <option key={role} value={role} className='capitalize'>{role}</option>
+                  ))}
                 </select>
               </div>
 
@@ -246,12 +228,9 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
                   onChange={(e) => handleChange('department', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  <option value="Engineering">Engineering</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="HR">HR</option>
-                  <option value="Sales">Sales</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Operations">Operations</option>
+                  {departments.map((dept) => (
+                    <option key={dept._id} value={dept._id} className='capitalize'>{dept.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -302,11 +281,9 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
                     onChange={(e) => handleChange('branch', e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
-                    <option value="New York">New York</option>
-                    <option value="San Francisco">San Francisco</option>
-                    <option value="Chicago">Chicago</option>
-                    <option value="Boston">Boston</option>
-                    <option value="Austin">Austin</option>
+                    {branches.map((branch) => (
+                      <option key={branch._id} value={branch._id} className='capitalize'>{branch.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -319,8 +296,8 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
                 <div className="relative">
                   <FiAward className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                   <select
-                    value={formData.level}
-                    onChange={(e) => handleChange('level', e.target.value)}
+                    value={formData.levels}
+                    onChange={(e) => handleChange('levels', e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
                     <option value="L1">L1 - Junior</option>
@@ -445,69 +422,6 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Leave Balance Section */}
-          <div className="border-b border-gray-200 pb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiShield className="text-teal-600" />
-              Leave Balance
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {LEAVETYPE.map((type) => (
-                <div key={type} className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    {getLeaveTypeDisplay(type)}
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.leaveBalance[type]}
-                    onChange={(e) => handleLeaveBalanceChange(type, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    placeholder="0"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Preferences */}
-          <div className="pb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferences</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Email Notifications</label>
-                  <p className="text-sm text-gray-500">Receive email notifications for leave requests</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.preferences.notifications}
-                    onChange={(e) => handleChange('preferences.notifications', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Auto Relief Assignment</label>
-                  <p className="text-sm text-gray-500">Automatically assign relief officers for leave</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.preferences.autoRelief}
-                    onChange={(e) => handleChange('preferences.autoRelief', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
-                </label>
-              </div>
-            </div>
-          </div>
-
           {/* Actions */}
           <div className='space-x-3'>
             <Button
@@ -520,6 +434,8 @@ export default function EmployeeModal({ employee, onSave, onClose }) {
             </Button>
             <Button
               type="submit"
+              disabled={loading}
+              loading={loading}
               size='large'
             >
               {employee ? 'Update Employee' : 'Add Employee'}

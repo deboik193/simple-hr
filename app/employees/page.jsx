@@ -15,12 +15,15 @@ import {
   FiChevronRight
 } from 'react-icons/fi';
 import Button from '@/components/Button';
-
-// Mock LEAVETYPE constant
-const LEAVETYPE = ['annual', 'sick', 'personal', 'maternity', 'paternity', 'emergency', 'unpaid'];
-
+import { getBranch, getDepartment, getEmployees, registerUser } from '@/api';
+import { useToast } from '@/context/toastContext';
+import { LEAVETYPE } from '@/constant/constant';
+import Loader from '@/components/Loader';
+import { ROLE } from '@/constant/constant';
 
 export default function Employees() {
+  const [loading, setLoading] = useState(true);
+
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [filters, setFilters] = useState({
@@ -30,208 +33,48 @@ export default function Employees() {
     status: 'active',
     branch: 'all'
   });
+  const [branches, setBranches] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const { addToast } = useToast();
 
-  // Mock data with additional fields
+  const fetchEmployees = async () => {
+    const res = await getEmployees();
+    setEmployees(res.data);
+    setFilteredEmployees(res.data);
+  }
+
+  const getDepartments = async () => {
+    const fetchDept = await getDepartment()
+    setDepartments(fetchDept.data);
+  }
+
+  const getBranches = async () => {
+    const fetchBranch = await getBranch()
+    setBranches(fetchBranch.data);
+  }
+
   useEffect(() => {
-    const mockEmployees = [
-      {
-        _id: '1',
-        employeeId: 'EMP001',
-        name: 'John Smith',
-        email: 'john.smith@company.com',
-        role: 'employee',
-        department: 'Engineering',
-        position: 'Senior Software Engineer',
-        managerId: { name: 'Mike Chen', position: 'Tech Lead' },
-        employmentType: 'full-time',
-        joinDate: '2022-03-15',
-        branch: 'New York',
-        levels: 'L3',
-        leaveBalance: {
-          annual: 15,
-          sick: 8,
-          personal: 3,
-          maternity: 0,
-          paternity: 0,
-          emergency: 2,
-          unpaid: 0
-        },
-        isActive: true,
-        personalInfo: {
-          dateOfBirth: '1990-05-15',
-          phoneNumber: '+1 (555) 123-4567',
-          emergencyContact: {
-            name: 'Jane Smith',
-            relationship: 'spouse',
-            phone: '+1 (555) 123-4568'
-          }
-        },
-        preferences: {
-          notifications: true,
-          autoRelief: false
-        }
-      },
-      {
-        _id: '2',
-        employeeId: 'EMP002',
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@company.com',
-        role: 'manager',
-        department: 'Marketing',
-        position: 'Marketing Manager',
-        managerId: '4',
-        employmentType: 'full-time',
-        joinDate: '2021-06-20',
-        phone: '+1 (555) 123-4568',
-        branch: 'San Francisco',
-        level: 'L4',
-        leaveBalance: {
-          annual: 15,
-          sick: 8,
-          personal: 3,
-          maternity: 0,
-          paternity: 0,
-          emergency: 2,
-          unpaid: 0
-        },
-        isActive: true,
-        personalInfo: {
-          dateOfBirth: '1990-05-15',
-          phoneNumber: '+1 (555) 123-4567',
-          emergencyContact: {
-            name: 'Jane Smith',
-            relationship: 'spouse',
-            phone: '+1 (555) 123-4568'
-          }
-        },
-        preferences: {
-          notifications: true,
-          autoRelief: true
-        }
-      },
-      {
-        _id: '3',
-        employeeId: 'EMP003',
-        name: 'Mike Chen',
-        email: 'mike.chen@company.com',
-        role: 'hr',
-        department: 'Engineering',
-        position: 'Tech Lead',
-        managerId: '4',
-        employmentType: 'full-time',
-        joinDate: '2020-01-10',
-        phone: '+1 (555) 123-4569',
-        branch: 'New York',
-        level: 'L5',
-        leaveBalance: {
-          annual: 15,
-          sick: 8,
-          personal: 3,
-          maternity: 0,
-          paternity: 0,
-          emergency: 2,
-          unpaid: 0
-        },
-        isActive: true,
-        personalInfo: {
-          dateOfBirth: '1990-05-15',
-          phoneNumber: '+1 (555) 123-4567',
-          emergencyContact: {
-            name: 'Jane Smith',
-            relationship: 'spouse',
-            phone: '+1 (555) 123-4568'
-          }
-        },
-        preferences: {
-          notifications: false,
-          autoRelief: true
-        }
-      },
-      {
-        _id: '4',
-        employeeId: 'EMP004',
-        name: 'Jessica Williams',
-        email: 'jessica.williams@company.com',
-        role: 'admin',
-        department: 'HR',
-        position: 'HR Director',
-        managerId: null,
-        employmentType: 'full-time',
-        joinDate: '2019-08-05',
-        phone: '+1 (555) 123-4570',
-        branch: 'Chicago',
-        level: 'L6',
-        leaveBalance: {
-          annual: 15,
-          sick: 8,
-          personal: 3,
-          maternity: 0,
-          paternity: 0,
-          emergency: 2,
-          unpaid: 0
-        },
-        isActive: true,
-        personalInfo: {
-          dateOfBirth: '1990-05-15',
-          phoneNumber: '+1 (555) 123-4567',
-          emergencyContact: {
-            name: 'Jane Smith',
-            relationship: 'spouse',
-            phone: '+1 (555) 123-4568'
-          }
-        },
-        preferences: {
-          notifications: true,
-          autoRelief: false
-        }
-      },
-      {
-        _id: '5',
-        employeeId: 'EMP005',
-        name: 'David Wilson',
-        email: 'david.wilson@company.com',
-        role: 'employee',
-        department: 'Sales',
-        position: 'Sales Executive',
-        managerId: '2',
-        employmentType: 'full-time',
-        joinDate: '2023-01-15',
-        phone: '+1 (555) 123-4571',
-        branch: 'San Francisco',
-        level: 'L2',
-        leaveBalance: {
-          annual: 15,
-          sick: 8,
-          personal: 3,
-          maternity: 0,
-          paternity: 0,
-          emergency: 2,
-          unpaid: 0
-        },
-        isActive: true,
-        personalInfo: {
-          dateOfBirth: '1990-05-15',
-          phoneNumber: '+1 (555) 123-4567',
-          emergencyContact: {
-            name: 'Jane Smith',
-            relationship: 'spouse',
-            phone: '+1 (555) 123-4568'
-          }
-        },
-        preferences: {
-          notifications: true,
-          autoRelief: true
-        }
-      }
-    ];
+    setLoading(true);
 
-    setEmployees(mockEmployees);
-    setFilteredEmployees(mockEmployees);
+    const loadData = async () => {
+
+      try {
+        fetchEmployees();
+        getDepartments();
+        getBranches();
+      } catch (error) {
+        addToast(`Failed to load. Please try again.`, 'error')
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   // Filter employees based on filters
@@ -241,22 +84,23 @@ export default function Employees() {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(emp =>
-        emp.name.toLowerCase().includes(searchLower) ||
+        emp.fullName.toLowerCase().includes(searchLower) ||
         emp.email.toLowerCase().includes(searchLower) ||
         emp.employeeId.toLowerCase().includes(searchLower)
       );
     }
 
     if (filters.department !== 'all') {
-      filtered = filtered.filter(emp => emp.department === filters.department);
+      const deptLower = filters.department?.toLowerCase();
+      filtered = filtered.filter(emp => emp?.department.name.toLowerCase() === deptLower);
     }
 
     if (filters.role !== 'all') {
-      filtered = filtered.filter(emp => emp.role === filters.role);
+      filtered = filtered.filter(emp => emp?.role.toLocaleLowerCase() === filters?.role.toLocaleLowerCase());
     }
 
     if (filters.branch !== 'all') {
-      filtered = filtered.filter(emp => emp.branch === filters.branch);
+      filtered = filtered.filter(emp => emp?.branch.name.toLocaleLowerCase() === filters?.branch.toLocaleLowerCase());
     }
 
     if (filters.status !== 'all') {
@@ -334,22 +178,22 @@ export default function Employees() {
     }
   };
 
-  const handleAddEmployee = (newEmployee) => {
-    const employee = {
-      ...newEmployee,
-      _id: Date.now().toString(),
-      employeeId: `EMP${String(employees.length + 1).padStart(3, '0')}`,
-      isActive: true,
-      leaveBalance: {
-        annual: 0,
-        sick: 0,
-        personal: 0,
-        maternity: 0,
-        paternity: 0
-      }
-    };
-    setEmployees(prev => [...prev, employee]);
-    setShowAddModal(false);
+  const handleAddEmployee = async (newEmployee) => {
+    setLoading(true);
+
+    const res = await registerUser({
+      newEmployee
+    });
+
+    if (res.error) {
+      addToast('Failed to add employee. Please try again.', 'error');
+      setLoading(false);
+    } else {
+      setEmployees(prev => [...prev, res.data]);
+      setShowAddModal(false);
+      addToast('Employee added successfully', 'success');
+      setLoading(false);
+    }
   };
 
   const handleUpdateEmployee = (updatedEmployee) => {
@@ -382,163 +226,167 @@ export default function Employees() {
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-gray-600 p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="search"
-                placeholder="Search employees by name, email, or ID..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
+      {loading ?
+        (<Loader />) :
+        (
+          <>
+            {/* Filters */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-gray-600 p-4">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="search"
+                      placeholder="Search employees by name, email, or ID..."
+                      value={filters.search}
+                      onChange={(e) => handleFilterChange('search', e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-4 flex-wrap">
+                  <select
+                    value={filters.department}
+                    onChange={(e) => handleFilterChange('department', e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="all">All Departments</option>
+                    {departments.map((dept) => (
+                      <option key={dept._id} value={dept.name}>{dept.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={filters.role}
+                    onChange={(e) => handleFilterChange('role', e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="all">All Roles</option>
+                    {ROLE.map((role) => (
+                      <option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={filters.branch}
+                    onChange={(e) => handleFilterChange('branch', e.target.value)}
+                    className="border capitalize border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="all">All Branches</option>
+                    {branches.map((branch) => (
+                      <option key={branch._id} value={branch.name} className='capitalize'>{branch.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={filters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-4 flex-wrap">
-            <select
-              value={filters.department}
-              onChange={(e) => handleFilterChange('department', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="all">All Departments</option>
-              <option value="Engineering">Engineering</option>
-              <option value="Marketing">Marketing</option>
-              <option value="HR">HR</option>
-              <option value="Sales">Sales</option>
-              <option value="Finance">Finance</option>
-            </select>
-            <select
-              value={filters.role}
-              onChange={(e) => handleFilterChange('role', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="all">All Roles</option>
-              <option value="employee">Employee</option>
-              <option value="manager">Manager</option>
-              <option value="hr">HR</option>
-              <option value="admin">Admin</option>
-            </select>
-            <select
-              value={filters.branch}
-              onChange={(e) => handleFilterChange('branch', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="all">All Branches</option>
-              <option value="New York">New York</option>
-              <option value="San Francisco">San Francisco</option>
-              <option value="Chicago">Chicago</option>
-              <option value="Boston">Boston</option>
-            </select>
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-      </div>
 
-      {/* Employees Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                {columns.map((column) => (
-                  <th key={column} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentEmployees.map((employee) => (
-                <tr key={employee._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {/* Employee info with new fields */}
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-sm font-medium text-green-600">
-                          {employee.name.split(' ').map(n => n[0]).join('')}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">{employee.name}</div>
-                        <div className="text-sm text-gray-500">{employee.email}</div>
-                        <div className="text-xs text-gray-400">{employee.employeeId}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{employee.position}</div>
-                    <div className="text-sm text-gray-500">{employee.department}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{employee.branch}</div>
-                    <div className="text-sm text-gray-500">{employee.level}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col gap-1">
-                      {getRoleBadge(employee.role)}
-                      {getStatusBadge(employee.isActive)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      {LEAVETYPE.slice(0, 3).map((type) => (
-                        <div key={type} className="text-center">
-                          <div className="font-semibold text-green-700">{employee.leaveBalance?.[type] || 0}</div>
-                          <div className="text-xs text-green-600 capitalize">{type}</div>
-                        </div>
+            {/* Employees Table */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      {columns.map((column) => (
+                        <th key={column} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {column}
+                        </th>
                       ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleViewEmployee(employee)}
-                        className="text-green-600 hover:text-green-900 p-1"
-                        title="View Details"
-                      >
-                        <FiEye size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleEditEmployee(employee)}
-                        className="text-gray-600 hover:text-gray-900 p-1"
-                        title="Edit"
-                      >
-                        <FiEdit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteEmployee(employee._id)}
-                        className="text-red-600 hover:text-red-900 p-1"
-                        title="Delete"
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentEmployees.map((employee) => (
+                      <tr key={employee._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {/* Employee info with new fields */}
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                              <span className="text-sm uppercase font-medium text-green-600">
+                                {employee.fullName.split(' ').map(n => n[0]).join('')}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-medium capitalize text-gray-900">{employee.fullName}</div>
+                              <div className="text-sm text-gray-500">{employee.email}</div>
+                              <div className="text-xs text-gray-400">{employee.employeeId}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900 capitalize">{employee.position}</div>
+                          <div className="text-sm text-gray-500 capitalize">{employee?.department.name}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 capitalize">{employee?.branch.name}</div>
+                          <div className="text-sm capitalize text-gray-500">{employee.levels}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col gap-1">
+                            {getRoleBadge(employee.role)}
+                            {getStatusBadge(employee.isActive)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex gap-2">
+                            {LEAVETYPE.slice(0, 3).map((type) => (
+                              <div key={type} className="text-center">
+                                <div className="font-semibold text-green-700">{employee.leaveBalance?.[type] || 0}</div>
+                                <div className="text-xs text-green-600 capitalize">{type}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleViewEmployee(employee)}
+                              className="text-green-600 hover:text-green-900 p-1"
+                              title="View Details"
+                            >
+                              <FiEye size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleEditEmployee(employee)}
+                              className="text-gray-600 hover:text-gray-900 p-1"
+                              title="Edit"
+                            >
+                              <FiEdit size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEmployee(employee._id)}
+                              className="text-red-600 hover:text-red-900 p-1"
+                              title="Delete"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-        {/* Empty State */}
-        {filteredEmployees.length === 0 && (
-          <div className="text-center py-12">
-            <FiUser className="mx-auto text-gray-400" size={48} />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No employees found</h3>
-            <p className="mt-2 text-gray-600">Try adjusting your search or filters</p>
-          </div>
+
+              {/* Empty State */}
+              {filteredEmployees.length === 0 && currentEmployees.length === 0 && (
+                <div className="text-center py-12">
+                  <FiUser className="mx-auto text-gray-400" size={48} />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">No employees found</h3>
+                  <p className="mt-2 text-gray-600">Try adjusting your search or filters</p>
+                </div>
+              )}
+            </div>
+          </>
         )}
-      </div>
+
 
       {/* Pagination */}
       {filteredEmployees.length > 0 && (
@@ -586,6 +434,7 @@ export default function Employees() {
         <EmployeeModal
           employee={selectedEmployee}
           onSave={selectedEmployee ? handleUpdateEmployee : handleAddEmployee}
+          loading={loading}
           onClose={() => {
             setShowAddModal(false);
             setSelectedEmployee(null);

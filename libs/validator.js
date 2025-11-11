@@ -124,10 +124,20 @@ export const authValidation = {
   registerUser: Joi.object({
     fullName: commonSchemas.name.required(),
     email: commonSchemas.email.required(),
-    phoneNumber: commonSchemas.phone.required(),
-    password: commonSchemas.password.required(),
+    personalInfo: {
+      dateOfBirth: commonSchemas.dateOfBirth.required(),
+      phoneNumber: commonSchemas.phone.required(),
+      emergencyContact: {
+        phone: commonSchemas.phone.required(),
+        name: commonSchemas.name.required(),
+        relationship: Joi.string()
+          .trim()
+          .required()
+      }
+    },
+    password: commonSchemas.password.optional(),
     role: Joi.string()
-      .valid('employee', 'manager', 'hr', 'admin')
+      .valid('employee', 'manager', 'hr', 'admin', 'department-head')
       .default('employee')
       .messages({
         'any.only': 'Role must be one of: employee, manager, hr, admin'
@@ -153,14 +163,6 @@ export const authValidation = {
         'string.empty': 'Branch is required'
       }),
     levels: commonSchemas.levels.required(),
-    dateOfBirth: commonSchemas.dateOfBirth.required(),
-    emergencyPhone: commonSchemas.phone,
-    emergencyName: commonSchemas.name,
-    emergencyRelationship: Joi.string()
-      .trim()
-      .messages({
-        'string.empty': 'Emergency contact relationship is required'
-      }),
   }),
 
   registerDepartment: Joi.object({
