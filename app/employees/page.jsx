@@ -15,7 +15,7 @@ import {
   FiChevronRight
 } from 'react-icons/fi';
 import Button from '@/components/Button';
-import { getBranch, getDepartment, getEmployees, registerUser } from '@/api';
+import { deleteUser, department, getBranch, getDepartment, getEmployees, registerUser, updateUser } from '@/api';
 import { useToast } from '@/context/toastContext';
 import { LEAVETYPE } from '@/constant/constant';
 import Loader from '@/components/Loader';
@@ -172,36 +172,54 @@ export default function Employees() {
     setShowDetailModal(true);
   };
 
-  const handleDeleteEmployee = (employeeId) => {
+  const handleDeleteEmployee = async(employeeId) => {
     if (window.confirm('Are you sure you want to delete this employee?')) {
-      setEmployees(prev => prev.filter(emp => emp._id !== employeeId));
+
+      const res = await deleteUser(employeeId);
+
+      if (res.error) {
+        addToast(res.error, 'error');
+      } else {
+        fetchEmployees();
+        addToast('Employee deleted successfully', 'success');
+      }
     }
   };
 
   const handleAddEmployee = async (newEmployee) => {
     setLoading(true);
 
-    const res = await registerUser({
-      newEmployee
-    });
+    const res = await registerUser(newEmployee);
 
     if (res.error) {
-      addToast('Failed to add employee. Please try again.', 'error');
+      addToast(res.error, 'error');
       setLoading(false);
     } else {
-      setEmployees(prev => [...prev, res.data]);
+      fetchEmployees();
       setShowAddModal(false);
       addToast('Employee added successfully', 'success');
       setLoading(false);
     }
   };
 
-  const handleUpdateEmployee = (updatedEmployee) => {
-    setEmployees(prev => prev.map(emp =>
-      emp._id === updatedEmployee._id ? updatedEmployee : emp
-    ));
-    setSelectedEmployee(null);
-    setShowAddModal(false);
+  const handleUpdateEmployee = async (updatedEmployee) => {
+    setLoading(true);
+
+    const res = await updateUser({
+      ...updatedEmployee, department: updatedEmployee?.department._id, managerId: updatedEmployee?.managerId._id, branch: updatedEmployee?.branch._id, _id: undefined, employeeId: undefined, leaveBalance: undefined, isActive: undefined, preferences: undefined, createdAt: undefined, updatedAt: undefined, __v: undefined
+    }, selectedEmployee._id);
+
+    if (res.error) {
+      addToast(res.error, 'error');
+      setLoading(false);
+    } else {
+      addToast('Employee updated successfully', 'success');
+      fetchEmployees();
+      setLoading(false);
+      setSelectedEmployee(null);
+      setShowAddModal(false);
+    }
+
   };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -347,21 +365,21 @@ export default function Employees() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleViewEmployee(employee)}
-                              className="text-green-600 hover:text-green-900 p-1"
+                              className="text-green-600 cursor-pointer hover:text-green-900 p-1"
                               title="View Details"
                             >
                               <FiEye size={16} />
                             </button>
                             <button
                               onClick={() => handleEditEmployee(employee)}
-                              className="text-gray-600 hover:text-gray-900 p-1"
+                              className="text-gray-600 cursor-pointer hover:text-gray-900 p-1"
                               title="Edit"
                             >
                               <FiEdit size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteEmployee(employee._id)}
-                              className="text-red-600 hover:text-red-900 p-1"
+                              className="text-red-600 cursor-pointer hover:text-red-900 p-1"
                               title="Delete"
                             >
                               <FiTrash2 size={16} />

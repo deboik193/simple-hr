@@ -147,6 +147,11 @@ export const authValidation = {
       .messages({
         'string.empty': 'Department is required'
       }),
+    managerId: Joi.string()
+      .required()
+      .messages({
+        'string.empty': 'Manager is required'
+      }),
     position: commonSchemas.position.required(),
     resetPasswordToken: Joi.string().optional(),
     resetPasswordExpires: Joi.date().optional(),

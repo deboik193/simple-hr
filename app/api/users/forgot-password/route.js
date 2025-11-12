@@ -30,10 +30,6 @@ export const POST = withErrorHandler(async (req) => {
 
   // Fetch the updated user
   const user = await User.findOne({ email: value.email });
-  console.log('Updated user:', {
-    token: user.resetPasswordToken,
-    expires: user.resetPasswordExpires
-  });
 
   await emailService.sendPasswordResetEmail(user, token);
 

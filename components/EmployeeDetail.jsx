@@ -1,10 +1,8 @@
 // components/EmployeeDetail.js
 'use client';
 
-import { FiMail, FiPhone, FiBriefcase, FiCalendar, FiUser, FiAward, FiMapPin, FiHeart, FiShield, FiX } from 'react-icons/fi';
-
-// Mock LEAVETYPE constant
-const LEAVETYPE = ['annual', 'sick', 'personal', 'maternity', 'paternity', 'emergency', 'unpaid'];
+import { FiMail, FiBriefcase, FiCalendar, FiUser, FiAward, FiMapPin, FiHeart, FiShield, FiX } from 'react-icons/fi';
+import { LEAVETYPE } from '@/constant/constant';
 
 export default function EmployeeDetail({ employee, onClose }) {
   if (!employee) return null;
@@ -53,13 +51,13 @@ export default function EmployeeDetail({ employee, onClose }) {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-medium text-teal-600">
-                {employee.name.split(' ').map(n => n[0]).join('')}
+              <span className="text-2xl font-medium text-teal-600 uppercase">
+                {employee.fullName.split(' ').map(n => n[0]).join('')}
               </span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{employee.name}</h2>
-              <p className="text-gray-600">{employee.position} • {employee.department}</p>
+              <h2 className="text-2xl font-bold text-gray-900 capitalize">{employee.fullName}</h2>
+              <p className="text-gray-600 capitalize">{employee.position} • {employee.department.name}</p>
               <p className="text-sm text-gray-500">{employee.employeeId}</p>
             </div>
           </div>
@@ -123,14 +121,14 @@ export default function EmployeeDetail({ employee, onClose }) {
                     <FiMapPin className="text-gray-400" size={18} />
                     <div>
                       <p className="text-sm text-gray-600">Branch</p>
-                      <p className="font-medium text-gray-900">{employee.branch || 'Not assigned'}</p>
+                      <p className="font-medium text-gray-900">{employee.branch.name || 'Not assigned'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <FiAward className="text-gray-400" size={18} />
                     <div>
                       <p className="text-sm text-gray-600">Level</p>
-                      <p className="font-medium text-gray-900">{employee.levels || 'Not assigned'}</p>
+                      <p className="font-medium text-gray-900 capitalize">{employee.levels || 'Not assigned'}</p>
                     </div>
                   </div>
                 </div>
@@ -214,8 +212,8 @@ export default function EmployeeDetail({ employee, onClose }) {
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Status</h3>
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${employee.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
                   }`}>
                   {employee.isActive ? 'Active' : 'Inactive'}
                 </div>
@@ -228,8 +226,8 @@ export default function EmployeeDetail({ employee, onClose }) {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-700">Email Notifications</span>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${employee.preferences?.notifications
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
                       }`}>
                       {employee.preferences?.notifications ? 'Enabled' : 'Disabled'}
                     </span>
@@ -237,8 +235,8 @@ export default function EmployeeDetail({ employee, onClose }) {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-700">Auto Relief</span>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${employee.preferences?.autoRelief
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
                       }`}>
                       {employee.preferences?.autoRelief ? 'Enabled' : 'Disabled'}
                     </span>
@@ -252,13 +250,13 @@ export default function EmployeeDetail({ employee, onClose }) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Reports To</h3>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-teal-600">
-                        {employee.managerId.name?.split(' ').map(n => n[0]).join('') || 'M'}
+                      <span className="text-sm font-medium text-teal-600 uppercase">
+                        {employee.managerId.fullName?.split(' ').map(n => n[0]).join('') || 'M'}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{employee.managerId.name || 'Manager'}</p>
-                      <p className="text-sm text-gray-600">{employee.managerId.position || 'Manager'}</p>
+                      <p className="font-medium text-gray-900 capitalize">{employee.managerId.fullName || 'Manager'}</p>
+                      <p className="text-sm text-gray-600 capitalize">{employee.managerId.position || 'Manager'}</p>
                     </div>
                   </div>
                 </div>

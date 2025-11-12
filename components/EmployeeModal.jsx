@@ -4,9 +4,8 @@
 import { useState, useEffect } from 'react';
 import { FiX, FiUser, FiMail, FiPhone, FiBriefcase, FiCalendar, FiAward, FiMapPin, FiHeart } from 'react-icons/fi';
 import Button from './Button';
-import { LEAVETYPE } from '@/constant/constant';
 import { ROLE } from '@/constant/constant';
-import { getBranch, getDepartment } from '@/api';
+import { getBranch, getDepartment, getManagers } from '@/api';
 
 export default function EmployeeModal({ employee, onSave, onClose, loading }) {
   const [formData, setFormData] = useState({
@@ -17,7 +16,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
     position: '',
     employmentType: 'full-time',
     joinDate: new Date().toISOString().split('T')[0],
-    branch: 'New York',
+    branch: '',
     levels: 'L1',
     personalInfo: {
       dateOfBirth: '',
@@ -31,6 +30,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
   });
   const [branches, setBranches] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [managers, setManagers] = useState([]);
   const [errors, setErrors] = useState({});
 
   const getDepartments = async () => {
@@ -43,9 +43,15 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
     setBranches(fetchBranch.data);
   }
 
+  const getManager = async () => {
+    const fetchManagers = await getManagers();
+    setManagers(fetchManagers.data);
+  }
+
   useEffect(() => {
     getDepartments();
     getBranches();
+    getManager();
   }, []);
 
   useEffect(() => {
@@ -58,7 +64,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
         position: employee.position,
         employmentType: employee.employmentType,
         joinDate: employee.joinDate.split('T')[0],
-        branch: employee.branch || 'New York',
+        branch: employee.branch,
         levels: employee.levels || 'L1',
         personalInfo: {
           dateOfBirth: employee.personalInfo?.dateOfBirth?.split('T')[0] || '',
@@ -228,6 +234,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                   onChange={(e) => handleChange('department', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
+                  <option value="">Select Department</option>
                   {departments.map((dept) => (
                     <option key={dept._id} value={dept._id} className='capitalize'>{dept.name}</option>
                   ))}
@@ -281,6 +288,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                     onChange={(e) => handleChange('branch', e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
+                    <option value="">Select Branch</option>
                     {branches.map((branch) => (
                       <option key={branch._id} value={branch._id} className='capitalize'>{branch.name}</option>
                     ))}
@@ -323,6 +331,25 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                     onChange={(e) => handleChange('joinDate', e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Line Manager
+                </label>
+                <div className="relative">
+                  <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <select
+                    type="date"
+                    value={formData.managerId}
+                    onChange={(e) => handleChange('managerId', e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">Select Manager</option>
+                    {managers.map((manager) => (
+                      <option key={manager._id} value={manager._id} className='capitalize'>{manager.fullName}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

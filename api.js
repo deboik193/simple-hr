@@ -73,3 +73,11 @@ export const resetPassword = async (data) => {
 export const registerUser = async (data) => {
   return await fetchClient.post("/api/users/employee", data);
 };
+
+export const updateUser = async (data, id) => {
+  return await fetchClient.patch(`/api/users/employee/${id}`, data);
+};
+
+export const deleteUser = async (id) => {
+  return await fetchClient.delete(`/api/users/employee/${id}`);
+}
