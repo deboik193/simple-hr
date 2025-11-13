@@ -69,7 +69,7 @@ export default function ActionModal({ request, actionType, notes, onNotesChange,
               value={notes}
               onChange={(e) => onNotesChange(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               placeholder={actionType === 'approve'
                 ? 'Add any additional notes or instructions...'
                 : 'Please provide a reason for rejecting this leave request...'

@@ -1,5 +1,6 @@
 // app/api/leave-policies/[id]/route.js
 import { ApiResponse, AppError, withErrorHandler } from '@/libs/errorHandler';
+import { getAuthUser } from '@/libs/middleware';
 import dbConnect from '@/libs/mongodb';
 import { authValidation } from '@/libs/validator';
 import LeavePolicy from '@/models/LeavePolicy';

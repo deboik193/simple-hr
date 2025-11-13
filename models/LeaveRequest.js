@@ -1,5 +1,5 @@
 // models/LeaveRequest.js
-const { LEAVETYPE } = require('@/constant/constant');
+const { LEAVETYPE, STATUS, APPROVALHISTORY } = require('@/constant/constant');
 const mongoose = require('mongoose');
 
 const leaveRequestSchema = new mongoose.Schema({
@@ -31,16 +31,7 @@ const leaveRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: [
-      'draft',
-      'pending-relief',
-      'pending-manager',
-      'pending-hr',
-      'approved',
-      'rejected',
-      'cancelled',
-      'revoked'
-    ],
+    enum: [STATUS],
     default: 'draft'
   },
   // Relief Officer System
@@ -51,11 +42,10 @@ const leaveRequestSchema = new mongoose.Schema({
   },
   reliefStatus: {
     type: String,
-    enum: ['pending', 'accepted', 'declined', 'cancelled'],
+    enum: [STATUS],
     default: 'pending'
   },
-  
-  reliefNotes: String,
+  additionalFile: String,
 
   // Multi-level Approval Tracking
   approvalHistory: [{
@@ -66,7 +56,7 @@ const leaveRequestSchema = new mongoose.Schema({
     role: String,
     action: {
       type: String,
-      enum: ['submitted', 'accepted-relief', 'declined-relief', 'approved', 'rejected', 'recalled']
+      enum: [APPROVALHISTORY]
     },
     notes: String,
     timestamp: {
@@ -75,25 +65,16 @@ const leaveRequestSchema = new mongoose.Schema({
     }
   }],
 
+  policyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'LeavePolicy'
+  },
+
   // Handover information
   handoverNotes: String,
   urgentContact: String,
-
-  // System fields
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// Update the updatedAt field before saving
-leaveRequestSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
+}, {
+  timestamps: true
 });
 
 // Indexes for performance
@@ -101,7 +82,6 @@ leaveRequestSchema.index({ employeeId: 1, createdAt: -1 });
 leaveRequestSchema.index({ reliefOfficerId: 1, status: 1 });
 leaveRequestSchema.index({ status: 1 });
 leaveRequestSchema.index({ startDate: 1, endDate: 1 });
-
 
 leaveRequestSchema.pre('save', async function (next) {
 
@@ -119,4 +99,4 @@ leaveRequestSchema.pre('save', async function (next) {
   next();
 })
 
-module.exports = mongoose.model('LeaveRequest', leaveRequestSchema);
+module.exports = mongoose.models.LeaveRequest || mongoose.model('LeaveRequest', leaveRequestSchema);

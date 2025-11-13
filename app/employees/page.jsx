@@ -249,7 +249,7 @@ export default function Employees() {
         (
           <>
             {/* Filters */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-gray-600 p-4">
+            <div className="bg-white rounded-lg border border-gray-200 text-gray-600 p-4">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1">
                   <div className="relative">
@@ -307,7 +307,7 @@ export default function Employees() {
             </div>
 
             {/* Employees Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">

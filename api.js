@@ -81,3 +81,7 @@ export const updateUser = async (data, id) => {
 export const deleteUser = async (id) => {
   return await fetchClient.delete(`/api/users/employee/${id}`);
 }
+
+export const requestLeave = async (data) => {
+  return await fetchClient.post( `/api/leave-request`, data);
+}

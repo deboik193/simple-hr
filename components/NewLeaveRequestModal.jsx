@@ -175,7 +175,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
               <select
                 value={formData.leaveType}
                 onChange={(e) => handleChange('leaveType', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.leaveType ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.leaveType ? 'border-red-300' : 'border-gray-300'
                   }`}
               >
                 {LEAVETYPE.map((type) => (
@@ -219,7 +219,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
                   value={formData.startDate}
                   onChange={(e) => handleChange('startDate', e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.startDate ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.startDate ? 'border-red-300' : 'border-gray-300'
                     }`}
                 />
               </div>
@@ -240,7 +240,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
                   value={formData.endDate}
                   onChange={(e) => handleChange('endDate', e.target.value)}
                   min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.endDate ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.endDate ? 'border-red-300' : 'border-gray-300'
                     }`}
                 />
               </div>
@@ -258,7 +258,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
             <select
               value={formData.reliefOfficerId}
               onChange={(e) => handleChange('reliefOfficerId', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reliefOfficerId ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.reliefOfficerId ? 'border-red-300' : 'border-gray-300'
                 }`}
             >
               <option value="">Select Relief Officer</option>
@@ -286,7 +286,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
               onChange={(e) => handleChange('reason', e.target.value)}
               rows={3}
               placeholder="Please provide a detailed reason for your leave request..."
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reason ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.reason ? 'border-red-300' : 'border-gray-300'
                 }`}
             />
             {errors.reason && (
@@ -294,6 +294,28 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
             )}
             <p className="mt-1 text-sm text-gray-500">
               Minimum 10 characters. For sick leave, additional documentation may be required.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Additional Documents
+            </label>
+            <div className="relative">
+              <FiFileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type="file"
+                value={formData.reports}
+                onChange={(e) => handleChange('reports', e.target.value)}
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.endDate ? 'border-red-300' : 'border-gray-300'
+                  }`}
+              />
+            </div>
+            {errors.endDate && (
+              <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
+            )}
+            <p className="mt-1 text-sm text-gray-500">
+              Doctors report if necessary for sick leave(optional).
             </p>
           </div>
 
@@ -307,7 +329,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
               onChange={(e) => handleChange('handoverNotes', e.target.value)}
               rows={3}
               placeholder="Describe what needs to be covered, important deadlines, key contacts, etc."
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.handoverNotes ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.handoverNotes ? 'border-red-300' : 'border-gray-300'
                 }`}
             />
             {errors.handoverNotes && (
@@ -330,7 +352,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
                 value={formData.urgentContact}
                 onChange={(e) => handleChange('urgentContact', e.target.value)}
                 placeholder="Phone number where you can be reached in case of emergency"
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.urgentContact ? 'border-red-300' : 'border-gray-300'
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.urgentContact ? 'border-red-300' : 'border-gray-300'
                   }`}
               />
             </div>
@@ -375,7 +397,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
             <button
               type="submit"
               disabled={!isFormValid || isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

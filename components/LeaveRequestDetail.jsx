@@ -63,7 +63,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
             {/* Employee Information */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FiUser className="text-blue-600" />
+                <FiUser className="text-teal-600" />
                 Employee Information
               </h3>
               <div className="space-y-2">
@@ -89,7 +89,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
             {/* Leave Details */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FiCalendar className="text-blue-600" />
+                <FiCalendar className="text-teal-600" />
                 Leave Details
               </h3>
               <div className="space-y-2">
@@ -128,7 +128,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
             {/* Reason */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FiFileText className="text-blue-600" />
+                <FiFileText className="text-teal-600" />
                 Reason for Leave
               </h3>
               <p className="text-gray-700">{request.reason}</p>
@@ -137,7 +137,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
             {/* Handover Information */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FiFileText className="text-blue-600" />
+                <FiFileText className="text-teal-600" />
                 Handover Notes
               </h3>
               <p className="text-gray-700">
@@ -158,7 +158,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
           {/* Relief Officer */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FiUser className="text-blue-600" />
+              <FiUser className="text-teal-600" />
               Relief Officer
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -183,14 +183,14 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
           {/* Approval History */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FiClock className="text-blue-600" />
+              <FiClock className="text-teal-600" />
               Approval History
             </h3>
             <div className="space-y-3">
               {request.approvalHistory.map((history, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-medium text-blue-600">
+                  <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-medium text-teal-600">
                       {history.approvedBy.name.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>

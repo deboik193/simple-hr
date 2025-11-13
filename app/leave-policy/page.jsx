@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import { useToast } from "@/context/toastContext";
 import { useState, useEffect } from "react";
-import { FiFileText, FiEdit2, FiTrash2, FiPlus, FiSearch, FiFilter } from "react-icons/fi";
+import { FiFileText, FiEdit2, FiTrash2, FiPlus, FiSearch, FiCalendar, FiX } from "react-icons/fi";
 
 const LEAVETYPE = ['annual', 'sick', 'personal', 'maternity', 'paternity', 'compassionate', 'unpaid', 'emergency'];
 const EMPLOYMENT_TYPES = ['full-time', 'part-time', 'contract'];
@@ -22,6 +22,11 @@ export default function LeavePolicies() {
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const { addToast } = useToast();
+  // Add this state to track blackout dates management
+  const [blackoutDates, setBlackoutDates] = useState([]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [newBlackoutDate, setNewBlackoutDate] = useState('');
+
 
   const [policyForm, setPolicyForm] = useState({
     policyName: '',
@@ -52,6 +57,55 @@ export default function LeavePolicies() {
     },
     isActive: true
   });
+
+  // Add this useEffect to sync blackout dates with form data
+  useEffect(() => {
+    if (policyForm.restrictions.blackoutDates) {
+      setBlackoutDates(policyForm.restrictions.blackoutDates);
+    }
+  }, [policyForm.restrictions.blackoutDates]);
+
+  // Add these handler functions for blackout dates
+  const handleAddBlackoutDate = () => {
+    if (newBlackoutDate && !blackoutDates.includes(newBlackoutDate)) {
+      const updatedDates = [...blackoutDates, newBlackoutDate].sort();
+      setBlackoutDates(updatedDates);
+      updatePolicyRestrictions('blackoutDates', updatedDates);
+      setNewBlackoutDate('');
+      setShowDatePicker(false);
+    }
+  };
+
+  const handleRemoveBlackoutDate = (dateToRemove) => {
+    const updatedDates = blackoutDates.filter(date => date !== dateToRemove);
+    setBlackoutDates(updatedDates);
+    updatePolicyRestrictions('blackoutDates', updatedDates);
+  };
+
+  const handleClearAllBlackoutDates = () => {
+    setBlackoutDates([]);
+    updatePolicyRestrictions('blackoutDates', []);
+  };
+
+  // Format date for display
+  const formatDateDisplay = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Check if date is in the past
+  const isDateInPast = (dateString) => {
+    return new Date(dateString) < new Date().setHours(0, 0, 0, 0);
+  };
+
+  // Check if date is duplicate
+  const isDateDuplicate = (dateString) => {
+    return blackoutDates.includes(dateString);
+  };
 
   // Load initial data
   useEffect(() => {
@@ -411,12 +465,12 @@ export default function LeavePolicies() {
                           >
                             <FiEdit2 className="w-4 h-4" />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => handleDelete(policy._id)}
                             className="p-2 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
                           >
                             <FiTrash2 className="w-4 h-4" />
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                     </div>
@@ -424,8 +478,6 @@ export default function LeavePolicies() {
                 </div>
               </>
             )}
-
-
           </>
         )}
 
@@ -619,7 +671,8 @@ export default function LeavePolicies() {
                   {/* Restrictions */}
                   <div className="border-t border-gray-200 pt-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-3">Restrictions</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Notice Days</label>
                         <input
@@ -628,6 +681,9 @@ export default function LeavePolicies() {
                           onChange={(e) => updatePolicyRestrictions('minNoticeDays', parseInt(e.target.value) || 0)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Minimum days notice required before leave start
+                        </p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Max Consecutive Days</label>
@@ -637,6 +693,9 @@ export default function LeavePolicies() {
                           onChange={(e) => updatePolicyRestrictions('maxConsecutiveDays', parseInt(e.target.value) || 0)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Maximum consecutive days allowed for this leave type
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <input
@@ -647,6 +706,169 @@ export default function LeavePolicies() {
                         />
                         <label className="text-sm font-medium text-gray-700">Allow Half Days</label>
                       </div>
+                    </div>
+
+                    {/* Blackout Dates Section */}
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <h5 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                            <FiCalendar className="text-teal-600" />
+                            Blackout Dates
+                          </h5>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Dates when leave requests are not allowed
+                          </p>
+                        </div>
+                        {blackoutDates.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleClearAllBlackoutDates}
+                            className="text-sm text-red-600 hover:text-red-700 font-medium"
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Add Blackout Date Button */}
+                      {!showDatePicker && (
+                        <button
+                          type="button"
+                          onClick={() => setShowDatePicker(true)}
+                          className="w-full py-2 px-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-teal-400 hover:bg-teal-50 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-teal-700 mb-4"
+                        >
+                          <FiPlus className="w-4 h-4" />
+                          Add Blackout Date
+                        </button>
+                      )}
+
+                      {/* Date Picker */}
+                      {showDatePicker && (
+                        <div className="bg-white rounded-lg border border-gray-300 p-4 mb-4">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="flex-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Select Blackout Date
+                              </label>
+                              <input
+                                type="date"
+                                value={newBlackoutDate}
+                                onChange={(e) => setNewBlackoutDate(e.target.value)}
+                                min={new Date().toISOString().split('T')[0]}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                              />
+                            </div>
+                            <div className="flex gap-2 mt-6">
+                              <button
+                                type="button"
+                                onClick={handleAddBlackoutDate}
+                                disabled={!newBlackoutDate || isDateDuplicate(newBlackoutDate) || isDateInPast(newBlackoutDate)}
+                                className="px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                              >
+                                Add
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowDatePicker(false);
+                                  setNewBlackoutDate('');
+                                }}
+                                className="px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm font-medium"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Validation Messages */}
+                          {newBlackoutDate && (
+                            <div className="text-xs space-y-1">
+                              {isDateInPast(newBlackoutDate) && (
+                                <p className="text-red-600 flex items-center gap-1">
+                                  <FiX className="w-3 h-3" />
+                                  Cannot add dates in the past
+                                </p>
+                              )}
+                              {isDateDuplicate(newBlackoutDate) && (
+                                <p className="text-red-600 flex items-center gap-1">
+                                  <FiX className="w-3 h-3" />
+                                  This date is already in the blackout list
+                                </p>
+                              )}
+                              {!isDateInPast(newBlackoutDate) && !isDateDuplicate(newBlackoutDate) && (
+                                <p className="text-green-600 flex items-center gap-1">
+                                  <FiPlus className="w-3 h-3" />
+                                  Ready to add {formatDateDisplay(newBlackoutDate)}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Blackout Dates List */}
+                      {blackoutDates.length > 0 ? (
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {blackoutDates.map((date, index) => (
+                            <div
+                              key={date}
+                              className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-red-200 hover:bg-red-50 transition-colors"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isDateInPast(date) ? 'bg-gray-100' : 'bg-red-100'
+                                  }`}>
+                                  <FiCalendar className={`w-4 h-4 ${isDateInPast(date) ? 'text-gray-400' : 'text-red-600'
+                                    }`} />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {formatDateDisplay(date)}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {isDateInPast(date) ? 'Past date' : 'Future date'}
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveBlackoutDate(date)}
+                                className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                title="Remove date"
+                              >
+                                <FiX className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
+                          <FiCalendar className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500">No blackout dates added</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Add dates when leave requests are restricted
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Summary */}
+                      {blackoutDates.length > 0 && (
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-blue-700 font-medium">
+                              {blackoutDates.length} blackout date{blackoutDates.length !== 1 ? 's' : ''} configured
+                            </span>
+                            <div className="flex gap-4 text-blue-600">
+                              <span>
+                                {blackoutDates.filter(date => !isDateInPast(date)).length} future
+                              </span>
+                              <span>
+                                {blackoutDates.filter(date => isDateInPast(date)).length} past
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

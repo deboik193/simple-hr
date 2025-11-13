@@ -52,11 +52,21 @@ export const POST = withErrorHandler(async (req) => {
 
   // Check for duplicate policy name
   const existingPolicy = await LeavePolicy.findOne({
-    policyName: value.policyName.toLowerCase()
+    policyName: new RegExp(`^${value.policyName}$`, 'i'),
   });
+
 
   if (existingPolicy) {
     throw new AppError('Policy name already exists', 409);
+  }
+  
+  const existingPolicyType = await LeavePolicy.findOne({
+    leaveType: new RegExp(`^${value.leaveType}$`, 'i')
+  });
+
+
+  if (existingPolicyType) {
+    throw new AppError('Policy type already exists', 409);
   }
 
   const policy = await LeavePolicy.create(value)

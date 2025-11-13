@@ -274,17 +274,17 @@ export const authValidation = {
     }, {})
   }),
 
-  updateUser: Joi.object({
-    fullName: commonSchemas.name.optional(),
-    phoneNumber: commonSchemas.phone.optional(),
-    position: commonSchemas.position.optional(),
-    department: Joi.string().optional(),
-    branch: Joi.string().optional(),
-    levels: commonSchemas.levels.optional(),
-    employmentType: Joi.string()
-      .valid('full-time', 'part-time', 'contract')
-      .optional(),
-    isActive: Joi.boolean().optional()
+  leaveRequest: Joi.object({
+    leaveType: Joi.string().valid(...LEAVETYPE).required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
+    totalDays: Joi.number().required(),
+    reason: Joi.string().required(),
+    reliefOfficerId: Joi.string().required(),
+    additionalFile: Joi.string().optional(),
+    handoverNotes: Joi.string().optional(),
+    urgentContact: Joi.string().optional(),
+
   })
 };
 

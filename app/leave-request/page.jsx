@@ -2,6 +2,7 @@
 'use client';
 
 import ActionModal from '@/components/actionModal';
+import Button from '@/components/Button';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import NewLeaveRequestModal from '@/components/NewLeaveRequestModal';
 import { useState, useEffect } from 'react';
@@ -287,7 +288,7 @@ export default function LeaveRequests() {
 
     // Show success message (you could use a toast notification here)
     alert('Leave request submitted successfully! It is now pending relief officer acceptance.');
-  };  
+  };
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -303,7 +304,7 @@ export default function LeaveRequests() {
     const statusConfig = {
       'draft': { color: 'bg-gray-100 text-gray-800', label: 'Draft', icon: FiClock },
       'pending-relief': { color: 'bg-yellow-100 text-yellow-800', label: 'Pending Relief', icon: FiUser },
-      'pending-manager': { color: 'bg-blue-100 text-blue-800', label: 'Pending Manager', icon: FiClock },
+      'pending-manager': { color: 'bg-teal-100 text-teal-800', label: 'Pending Manager', icon: FiClock },
       'pending-hr': { color: 'bg-purple-100 text-purple-800', label: 'Pending HR', icon: FiClock },
       'approved': { color: 'bg-green-100 text-green-800', label: 'Approved', icon: FiCheckCircle },
       'rejected': { color: 'bg-red-100 text-red-800', label: 'Rejected', icon: FiXCircle },
@@ -324,7 +325,7 @@ export default function LeaveRequests() {
 
   const getLeaveTypeBadge = (type) => {
     const typeConfig = {
-      'annual': { color: 'bg-blue-100 text-blue-800', label: 'Annual' },
+      'annual': { color: 'bg-teal-100 text-teal-800', label: 'Annual' },
       'sick': { color: 'bg-green-100 text-green-800', label: 'Sick' },
       'personal': { color: 'bg-purple-100 text-purple-800', label: 'Personal' },
       'maternity': { color: 'bg-pink-100 text-pink-800', label: 'Maternity' },
@@ -438,22 +439,21 @@ export default function LeaveRequests() {
           <p className="text-gray-600">Manage and review employee leave applications</p>
         </div>
         <div className="flex gap-3">
-          <button
+          <Button
+            variant="outline"
+            size='large'
             onClick={handleExport}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
           >
             <FiDownload size={18} />
-            Export
-          </button>
-          <button onClick={() => setShowNewRequestModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-            <FiPlus size={18} />
+          </Button>
+          <Button onClick={() => setShowNewRequestModal(true)} size='large'>
             New Request
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -463,7 +463,7 @@ export default function LeaveRequests() {
                 placeholder="Search by employee name, ID, or reason..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -471,7 +471,7 @@ export default function LeaveRequests() {
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Status</option>
               <option value="pending-relief">Pending Relief</option>
@@ -484,7 +484,7 @@ export default function LeaveRequests() {
             <select
               value={filters.leaveType}
               onChange={(e) => handleFilterChange('leaveType', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Types</option>
               <option value="annual">Annual</option>
@@ -498,7 +498,7 @@ export default function LeaveRequests() {
             <select
               value={filters.department}
               onChange={(e) => handleFilterChange('department', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Departments</option>
               <option value="Engineering">Engineering</option>
@@ -513,51 +513,27 @@ export default function LeaveRequests() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-gray-900">{filteredRequests.length}</div>
-          <div className="text-sm text-gray-600">Total Requests</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-blue-600">
-            {filteredRequests.filter(r => r.status.startsWith('pending')).length}
-          </div>
-          <div className="text-sm text-gray-600">Pending Approval</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-green-600">
-            {filteredRequests.filter(r => r.status === 'approved').length}
-          </div>
-          <div className="text-sm text-gray-600">Approved</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-red-600">
-            {filteredRequests.filter(r => r.status === 'rejected').length}
-          </div>
-          <div className="text-sm text-gray-600">Rejected</div>
-        </div>
+        {
+          [{ title: 'Total Requests', stats: filteredRequests.length }, { title: 'Pending Approval', stats: filteredRequests.filter(r => r.status.startsWith('pending')).length }, { title: 'Approved', stats: filteredRequests.filter(r => r.status === 'approved').length }, { title: 'Rejected', stats: filteredRequests.filter(r => r.status === 'rejected').length },].map((stat) => (
+            <div key={stat.title} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="text-2xl font-bold text-gray-900">{stat.stats}</div>
+              <div className="text-sm text-gray-600">{stat.title}</div>
+            </div>
+          ))
+        }
       </div>
 
       {/* Leave Requests Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Employee & Details
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Leave Period
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Relief Officer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                {['Employee & Details', 'Leave Period', 'Relief Officer', 'Status', 'Actions'].map((item) => (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {item}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -565,8 +541,8 @@ export default function LeaveRequests() {
                 <tr key={request._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-sm font-medium text-blue-600">
+                      <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-sm font-medium text-teal-600">
                           {request.employeeId.name.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
@@ -610,7 +586,7 @@ export default function LeaveRequests() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleViewDetails(request)}
-                        className="text-blue-600 hover:text-blue-900 p-1"
+                        className="text-teal-600 cursor-pointer hover:text-teal-900 p-1"
                         title="View Details"
                       >
                         <FiEye size={16} />
@@ -620,14 +596,14 @@ export default function LeaveRequests() {
                         <>
                           <button
                             onClick={() => handleAction(request, 'approve')}
-                            className="text-green-600 hover:text-green-900 p-1"
+                            className="text-green-600 cursor-pointer hover:text-green-900 p-1"
                             title="Approve"
                           >
                             <FiCheckCircle size={16} />
                           </button>
                           <button
                             onClick={() => handleAction(request, 'reject')}
-                            className="text-red-600 hover:text-red-900 p-1"
+                            className="text-red-600 cursor-pointer hover:text-red-900 p-1"
                             title="Reject"
                           >
                             <FiXCircle size={16} />
@@ -663,34 +639,32 @@ export default function LeaveRequests() {
             <span className="font-medium">{filteredRequests.length}</span> results
           </div>
           <div className="flex gap-1">
-            <button
+            <Button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               <FiChevronLeft size={16} />
-            </button>
+            </Button>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
+              <Button
                 key={page}
                 onClick={() => paginate(page)}
                 className={`px-3 py-1 rounded border ${currentPage === page
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-gray-300 hover:bg-gray-50'
+                  ? 'bg-teal-600 text-white border-teal-600'
+                  : 'border-gray-300 hover:bg-gray-50'
                   }`}
               >
                 {page}
-              </button>
+              </Button>
             ))}
 
-            <button
+            <Button
               onClick={() => paginate(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               <FiChevronRight size={16} />
-            </button>
+            </Button>
           </div>
         </div>
       )}

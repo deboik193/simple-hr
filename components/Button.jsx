@@ -21,7 +21,7 @@ const Button = ({
   // Variants based on your design
   const variants = {
     primary: 'bg-teal-600 text-white hover:bg-teal-700 border border-teal-600',
-    outline: 'border border-teal-600 text-teal-600 hover:bg-gray-100 bg-transparent',
+    outline: 'border border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white bg-transparent',
     ghost: 'text-teal-600 hover:bg-gray-100 bg-transparent border border-transparent',
   };
 
