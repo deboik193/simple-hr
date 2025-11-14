@@ -1,17 +1,19 @@
 // app/api/leave-requests/route.js
-import LeavePolicy from "@/models/LeavePolicy";
-import User from "@/models/User";
-import LeaveRequest from "@/models/LeaveRequest";
-import LeaveBalance from "@/models/LeaveBalance";
+import LeavePolicy from "../../../models/LeavePolicy";
+import User from "../../../models/User";
+import LeaveRequest from "../../../models/LeaveRequest";
+import LeaveBalance from "../../../models/LeaveBalance";
+import Department from "../../../models/Department";
+import Branch from "../../../models/Branch"
 
-const { withErrorHandler, ApiResponse } = require("@/libs/errorHandler");
-const { getAuthUser } = require("@/libs/middleware");
-const { default: dbConnect } = require("@/libs/mongodb");
-const { authValidation } = require("@/libs/validator");
-const AppError = require("@/libs/AppError");
+import { withErrorHandler, ApiResponse, AppError } from "@/libs/errorHandler";
+import { getAuthUser } from "@/libs/middleware";
+import dbConnect from "@/libs/mongodb";
+import { authValidation } from "@/libs/validator";
 
 export const POST = withErrorHandler(async (req) => {
   await dbConnect();
+  console.log('body.........................')
 
   const { user, errors } = await getAuthUser(req);
   if (errors) return errors;
@@ -27,7 +29,6 @@ export const POST = withErrorHandler(async (req) => {
   if (!userDetails) throw new AppError('User details not found', 404);
 
   const { employeeId, employmentType, dateOfJoining, department, branch } = userDetails;
-
   // Check if user's department is active
   if (!department || !department.isActive) {
     throw new AppError('Your department is not active. Cannot apply for leave.', 400);
@@ -232,7 +233,7 @@ export const POST = withErrorHandler(async (req) => {
 
   // 6. Check leave balance
   const leaveBalance = await LeaveBalance.findOne({
-    employeeId: user._id,
+    userId: user._id,
     leaveType: value.leaveType
   });
 

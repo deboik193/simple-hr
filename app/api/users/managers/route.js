@@ -2,9 +2,8 @@ import { ApiResponse, AppError, withErrorHandler } from "@/libs/errorHandler"
 import dbConnect from "@/libs/mongodb"
 import User from "@/models/User";
 import { getAuthUser } from '@/libs/middleware';
-import Department from "@/models/Department";
 
-// list all user
+// list all manager
 export const GET = withErrorHandler(async (req) => {
   await dbConnect();
 
@@ -13,7 +12,7 @@ export const GET = withErrorHandler(async (req) => {
   if (errors) return errors;
   if (!user) throw new AppError('Unauthorized', 401);
 
-  const userData = await User.find({ isActive: true }).select('fullName email position role employeeId department').populate({path: 'department'});
+  const userData = await User.find({ role: 'manager', isActive: true }).select('fullName email position role');
 
   return ApiResponse.success(userData, '');
 });

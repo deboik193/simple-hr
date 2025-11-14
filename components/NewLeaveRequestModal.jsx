@@ -1,22 +1,15 @@
 // components/NewLeaveRequestModal.js
 'use client';
 
+import { getAllUser, requestLeave } from '../api';
 import { useState, useEffect } from 'react';
 import {
-  FiX, FiCalendar, FiUser, FiFileText, FiPhone,
+  FiX, FiCalendar, FiPhone,
   FiClock, FiAlertCircle
 } from 'react-icons/fi';
-
-// Mock employees for relief officer selection
-const MOCK_EMPLOYEES = [
-  { _id: '1', name: 'Mike Chen', employeeId: 'EMP003', department: 'Engineering' },
-  { _id: '2', name: 'David Wilson', employeeId: 'EMP005', department: 'Marketing' },
-  { _id: '3', name: 'Alex Turner', employeeId: 'EMP009', department: 'Engineering' },
-  { _id: '4', name: 'Robert Brown', employeeId: 'EMP007', department: 'Sales' },
-  { _id: '5', name: 'Sarah Kim', employeeId: 'EMP010', department: 'HR' }
-];
-
-const LEAVETYPE = ['annual', 'sick', 'personal', 'maternity', 'paternity', 'emergency', 'unpaid'];
+import { LEAVETYPE } from '@/constant/constant';
+import CloudinaryFileUpload from './CloudinaryFileUpload';
+import Button from './Button';
 
 export default function NewLeaveRequestModal({ onSave, onClose }) {
   const [formData, setFormData] = useState({
@@ -31,9 +24,17 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [totalDays, setTotalDays] = useState(0);
+  const [reliefOfficere, setReliefOfficer] = useState([]);
+
+  const reliefOfficers = async () => {
+    const res = await getAllUser();
+    setReliefOfficer(res.data)
+  }
 
   // Calculate total days when dates change
   useEffect(() => {
+    reliefOfficers();
+
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
@@ -103,28 +104,12 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const newRequest = {
-        // _id: Date.now().toString(),
-        // ...formData,
-        // reliefOfficerId: MOCK_EMPLOYEES.find(emp => emp._id === formData.reliefOfficerId),
-        // totalDays,
-        // status: 'pending-relief',
-        // reliefStatus: 'pending',
-        // approvalHistory: [],
-        // employeeId: {
-        //   _id: 'current-user',
-        //   name: 'Current User',
-        //   employeeId: 'EMP001',
-        //   department: 'Engineering',
-        //   position: 'Software Engineer'
-        // }
-      };
-
-      onSave(newRequest);
+      const res = await requestLeave({ ...formData, totalDays })
+      console.log('hshshshsh', res)
+      onSave({ ...formData, totalDays });
       onClose();
+
     } catch (error) {
       setErrors({ submit: 'Failed to create leave request. Please try again.' });
     } finally {
@@ -262,9 +247,9 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
                 }`}
             >
               <option value="">Select Relief Officer</option>
-              {MOCK_EMPLOYEES.map((employee) => (
+              {reliefOfficere.map((employee) => (
                 <option key={employee._id} value={employee._id}>
-                  {employee.name} ({employee.employeeId}) - {employee.department}
+                  {employee.fullName} ({employee.employeeId}) - {employee?.department.name}
                 </option>
               ))}
             </select>
@@ -297,27 +282,15 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Additional Documents
-            </label>
-            <div className="relative">
-              <FiFileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="file"
-                value={formData.reports}
-                onChange={(e) => handleChange('reports', e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.endDate ? 'border-red-300' : 'border-gray-300'
-                  }`}
-              />
-            </div>
-            {errors.endDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
-            )}
-            <p className="mt-1 text-sm text-gray-500">
-              Doctors report if necessary for sick leave(optional).
-            </p>
-          </div>
+          <CloudinaryFileUpload
+            value={formData.additionalFile}
+            onChange={(url) => handleChange('additionalFile', url)}
+            folder="leave-requests"
+            maxSize={5 * 1024 * 1024} // 5MB
+            allowedTypes={['image/jpeg', 'image/png', 'image/gif', 'application/pdf']}
+            label="Additional Documents"
+            description="Doctors report if necessary for sick leave (optional)."
+          />
 
           {/* Handover Notes */}
           <div>
@@ -386,31 +359,30 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-            <button
+            <Button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              variant='outline'
+              size='large'
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              size='large'
               disabled={!isFormValid || isSubmitting}
-              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Submitting...
                 </>
               ) : (
                 <>
-                  <FiFileText size={16} />
                   Submit Request
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

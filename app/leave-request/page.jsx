@@ -1,14 +1,15 @@
 // app/leave-requests/page.js
 'use client';
 
-import ActionModal from '@/components/actionModal';
+import { getDepartment } from '../../api';
+import ActionModal from '../../components/actionModal';
 import Button from '@/components/Button';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
-import NewLeaveRequestModal from '@/components/NewLeaveRequestModal';
+import NewLeaveRequestModal from '../../components/NewLeaveRequestModal';
+import { LEAVETYPE, STATUS } from '@/constant/constant';
 import { useState, useEffect } from 'react';
 import {
   FiSearch,
-  FiPlus,
   FiEye,
   FiCalendar,
   FiUser,
@@ -247,8 +248,15 @@ export default function LeaveRequests() {
   const [actionNotes, setActionNotes] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  const [departments, setDepartments] = useState([]);
+
+  const getDepartments = async () => {
+    const fetchDept = await getDepartment();
+    setDepartments(fetchDept.data);
+  }
 
   useEffect(() => {
+    getDepartments();
     // Load mock data
     setLeaveRequests(MOCK_LEAVE_REQUESTS);
     setFilteredRequests(MOCK_LEAVE_REQUESTS);
@@ -283,9 +291,9 @@ export default function LeaveRequests() {
     setCurrentPage(1);
   }, [filters, leaveRequests]);
 
-  const handleNewRequest = (newRequest) => {
+  const handleNewRequest = async (newRequest) => {
+// console.log(newRequest)
     setLeaveRequests(prev => [newRequest, ...prev]);
-
     // Show success message (you could use a toast notification here)
     alert('Leave request submitted successfully! It is now pending relief officer acceptance.');
   };
@@ -331,7 +339,8 @@ export default function LeaveRequests() {
       'maternity': { color: 'bg-pink-100 text-pink-800', label: 'Maternity' },
       'paternity': { color: 'bg-teal-100 text-teal-800', label: 'Paternity' },
       'emergency': { color: 'bg-red-100 text-red-800', label: 'Emergency' },
-      'unpaid': { color: 'bg-gray-100 text-gray-800', label: 'Unpaid' }
+      'unpaid': { color: 'bg-gray-100 text-gray-800', label: 'Unpaid' },
+      'compassionate': { color: 'bg-blue-100 text-blue-800', label: 'Unpaid' }
     };
 
     const config = typeConfig[type] || typeConfig.annual;
@@ -474,12 +483,9 @@ export default function LeaveRequests() {
               className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Status</option>
-              <option value="pending-relief">Pending Relief</option>
-              <option value="pending-manager">Pending Manager</option>
-              <option value="pending-hr">Pending HR</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-              <option value="cancelled">Cancelled</option>
+              {STATUS.map((item) => (
+                <option key={item} className='capitalize' value={item}>{item}</option>
+              ))}
             </select>
             <select
               value={filters.leaveType}
@@ -487,13 +493,9 @@ export default function LeaveRequests() {
               className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Types</option>
-              <option value="annual">Annual</option>
-              <option value="sick">Sick</option>
-              <option value="personal">Personal</option>
-              <option value="maternity">Maternity</option>
-              <option value="paternity">Paternity</option>
-              <option value="emergency">Emergency</option>
-              <option value="unpaid">Unpaid</option>
+              {LEAVETYPE.map((item) => (
+                <option key={item} className='capitalize' value={item}>{item}</option>
+              ))}
             </select>
             <select
               value={filters.department}
@@ -501,11 +503,9 @@ export default function LeaveRequests() {
               className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Departments</option>
-              <option value="Engineering">Engineering</option>
-              <option value="Marketing">Marketing</option>
-              <option value="HR">HR</option>
-              <option value="Sales">Sales</option>
-              <option value="Finance">Finance</option>
+              {departments.map((item) => (
+                <option key={item?._id} className='capitalize' value={item?.name}>{item?.name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -514,7 +514,7 @@ export default function LeaveRequests() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {
-          [{ title: 'Total Requests', stats: filteredRequests.length }, { title: 'Pending Approval', stats: filteredRequests.filter(r => r.status.startsWith('pending')).length }, { title: 'Approved', stats: filteredRequests.filter(r => r.status === 'approved').length }, { title: 'Rejected', stats: filteredRequests.filter(r => r.status === 'rejected').length },].map((stat) => (
+          [{ title: 'Total Requests', stats: filteredRequests.length }, { title: 'Pending Approval', stats: filteredRequests.filter(r => r.status?.startsWith('pending')).length }, { title: 'Approved', stats: filteredRequests.filter(r => r.status === 'approved').length }, { title: 'Rejected', stats: filteredRequests.filter(r => r.status === 'rejected').length },].map((stat) => (
             <div key={stat.title} className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-2xl font-bold text-gray-900">{stat.stats}</div>
               <div className="text-sm text-gray-600">{stat.title}</div>
@@ -530,7 +530,7 @@ export default function LeaveRequests() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 {['Employee & Details', 'Leave Period', 'Relief Officer', 'Status', 'Actions'].map((item) => (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th key={item} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {item}
                   </th>
                 ))}

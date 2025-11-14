@@ -4,9 +4,9 @@
 import { useState } from 'react';
 import { FiEye, FiEyeOff, FiMail, FiLock } from 'react-icons/fi';
 import Link from 'next/link';
-import Button from '@/components/Button';
-import { loginUser } from '@/api';
-import { useToast } from '@/context/toastContext';
+import Button from '../../../components/Button';
+import { loginUser } from '../../../api';
+import { useToast } from '../../../context/toastContext';
 
 export default function Login() {
   const [formData, setFormData] = useState({

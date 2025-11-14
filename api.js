@@ -2,7 +2,15 @@
 import { fetchClient } from './libs/fetchClient';
 
 export const getManagers = async () => {
-  return await fetchClient.get("/api/users");
+  return await fetchClient.get("/api/users/managers");
+};
+
+export const getUserByRole = async (role) => {
+  return await fetchClient.get(`/api/users/${role}`);
+};
+
+export const getAllUser = async () => {
+  return await fetchClient.get(`/api/users`);
 };
 
 export const getEmployees = async () => {
@@ -84,4 +92,8 @@ export const deleteUser = async (id) => {
 
 export const requestLeave = async (data) => {
   return await fetchClient.post( `/api/leave-request`, data);
+}
+
+export const uploadCloudinary = async (data) => {
+  return await fetchClient.post(`/api/upload`, data)
 }

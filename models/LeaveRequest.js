@@ -31,7 +31,7 @@ const leaveRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: [STATUS],
+    enum: STATUS,
     default: 'draft'
   },
   // Relief Officer System
@@ -42,7 +42,7 @@ const leaveRequestSchema = new mongoose.Schema({
   },
   reliefStatus: {
     type: String,
-    enum: [STATUS],
+    enum: STATUS,
     default: 'pending'
   },
   additionalFile: String,
@@ -56,7 +56,7 @@ const leaveRequestSchema = new mongoose.Schema({
     role: String,
     action: {
       type: String,
-      enum: [APPROVALHISTORY]
+      enum: APPROVALHISTORY
     },
     notes: String,
     timestamp: {
@@ -78,7 +78,7 @@ const leaveRequestSchema = new mongoose.Schema({
 });
 
 // Indexes for performance
-leaveRequestSchema.index({ employeeId: 1, createdAt: -1 });
+leaveRequestSchema.index({ employeeId: 1 });
 leaveRequestSchema.index({ reliefOfficerId: 1, status: 1 });
 leaveRequestSchema.index({ status: 1 });
 leaveRequestSchema.index({ startDate: 1, endDate: 1 });

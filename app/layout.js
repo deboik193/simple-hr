@@ -1,5 +1,5 @@
 import Layout from '../components/Layout';
-import { ToastProvider } from "@/context/toastContext";
+import { ToastProvider } from "../context/toastContext";
 
 import "./globals.css";
 
