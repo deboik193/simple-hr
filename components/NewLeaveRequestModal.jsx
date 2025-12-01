@@ -31,19 +31,29 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
   const reliefOfficers = async () => {
     const res = await getAllUser();
     setReliefOfficer(res.data)
-    console.log('all usererrrrrrrrrrrrrrrrrr', res)
   }
 
-  // Calculate total days when dates change
   useEffect(() => {
     reliefOfficers();
 
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
-      const timeDiff = end.getTime() - start.getTime();
-      const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include both start and end dates
-      setTotalDays(dayDiff > 0 ? dayDiff : 0);
+
+      // Calculate total working days (excluding weekends)
+      let workingDays = 0;
+      const currentDate = new Date(start);
+
+      while (currentDate <= end) {
+        const dayOfWeek = currentDate.getDay();
+        // Monday to Friday are 1-5
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+          workingDays++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      setTotalDays(workingDays);
     } else {
       setTotalDays(0);
     }

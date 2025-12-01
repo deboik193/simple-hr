@@ -2,12 +2,6 @@
 const { LEAVETYPE } = require('@/constant/constant');
 const mongoose = require('mongoose');
 
-// Create a dynamic object based on LEAVETYPE
-const leaveBalanceSchemaFields = LEAVETYPE.reduce((acc, type) => {
-  acc[type] = { type: Number, default: 0 };
-  return acc;
-}, {});
-
 const leaveBalanceSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,

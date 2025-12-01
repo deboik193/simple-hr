@@ -283,8 +283,26 @@ export const POST = withErrorHandler(async (req) => {
     }
   }
 
-  // 5. Calculate total days (respecting your schema's totalDays field)
-  const totalDays = Math.floor((new Date(value.endDate) - new Date(value.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+  // 5. Calculate total days excluding weekends (respecting your schema's totalDays field)
+  const calculateWorkingDays = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    let totalDays = 0;
+    const current = new Date(start);
+
+    while (current <= end) {
+      const dayOfWeek = current.getDay();
+      // Monday (1) to Friday (5) are weekdays
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        totalDays++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    return totalDays;
+  };
+
+  const totalDays = calculateWorkingDays(value.startDate, value.endDate);
 
   // 6. Check leave balance
   const leaveBalance = await LeaveBalance.findOne({
