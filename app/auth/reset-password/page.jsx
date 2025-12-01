@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { FiLock, FiEye, FiEyeOff, FiCheck, FiArrowLeft } from 'react-icons/fi';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import { useToast } from '@/context/toastContext';
@@ -186,97 +187,98 @@ export default function ResetPassword() {
   }
 
   return (
-    <div>
-      {/* Reset Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* New Password */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            New Password
-          </label>
-          <div className="relative">
-            <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={formData.password}
-              onChange={(e) => handleChange('password', e.target.value)}
-              className={`w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              placeholder="Enter new password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-            </button>
-          </div>
-          {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
-
-          {/* Password Strength Indicator */}
-          {formData.password && (
-            <div className="mt-3 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Password strength:</span>
-                <span className={`text-sm font-medium ${passwordStrength.score <= 2 ? 'text-red-600' :
-                  passwordStrength.score <= 3 ? 'text-yellow-600' : 'text-green-600'
-                  }`}>
-                  {getPasswordStrengthText(passwordStrength.score)}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor(passwordStrength.score)}`}
-                  style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                ></div>
-              </div>
+    <Suspense>
+      <div>
+        {/* Reset Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* New Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              New Password
+            </label>
+            <div className="relative">
+              <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                className={`w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.password ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                placeholder="Enter new password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              </button>
             </div>
-          )}
-        </div>
+            {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
 
-        {/* Confirm New Password */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Confirm New Password
-          </label>
-          <div className="relative">
-            <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-            <input
-              type={showConfirmPassword ? 'text' : 'password'}
-              value={formData.confirmPassword}
-              onChange={(e) => handleChange('confirmPassword', e.target.value)}
-              className={`w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              placeholder="Confirm new password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              {showConfirmPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-            </button>
+            {/* Password Strength Indicator */}
+            {formData.password && (
+              <div className="mt-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Password strength:</span>
+                  <span className={`text-sm font-medium ${passwordStrength.score <= 2 ? 'text-red-600' :
+                    passwordStrength.score <= 3 ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                    {getPasswordStrengthText(passwordStrength.score)}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor(passwordStrength.score)}`}
+                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
           </div>
-          {errors.confirmPassword && <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>}
 
-          {/* Password Match Indicator */}
-          {formData.password && formData.confirmPassword && (
-            <div className="mt-2">
-              {formData.password === formData.confirmPassword ? (
-                <p className="text-sm text-green-600 flex items-center">
-                  <FiCheck className="mr-1" size={16} />
-                  Passwords match
-                </p>
-              ) : (
-                <p className="text-sm text-red-600">Passwords do not match</p>
-              )}
+          {/* Confirm New Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={formData.confirmPassword}
+                onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                className={`w-full pl-12 pr-12 py-4 bg-gray-50 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                placeholder="Confirm new password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showConfirmPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              </button>
             </div>
-          )}
-        </div>
+            {errors.confirmPassword && <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>}
 
-        {/* Password Requirements */}
-        {/* <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+            {/* Password Match Indicator */}
+            {formData.password && formData.confirmPassword && (
+              <div className="mt-2">
+                {formData.password === formData.confirmPassword ? (
+                  <p className="text-sm text-green-600 flex items-center">
+                    <FiCheck className="mr-1" size={16} />
+                    Passwords match
+                  </p>
+                ) : (
+                  <p className="text-sm text-red-600">Passwords do not match</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Password Requirements */}
+          {/* <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
           <p className="text-sm font-medium text-blue-800 mb-3">Password Requirements:</p>
           <ul className="text-sm text-blue-700 space-y-1">
             <li className={`flex items-center ${formData.password.length >= 8 ? 'text-green-600' : ''}`}>
@@ -302,8 +304,8 @@ export default function ResetPassword() {
           </ul>
         </div> */}
 
-        {/* Security Tips */}
-        {/* <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+          {/* Security Tips */}
+          {/* <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
           <p className="text-sm font-medium text-gray-700 mb-2">Security Tips:</p>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• Don't use common words or personal information</li>
@@ -313,8 +315,8 @@ export default function ResetPassword() {
           </ul>
         </div> */}
 
-        {/* Submit Error */}
-        {/* {errors.submit && (
+          {/* Submit Error */}
+          {/* {errors.submit && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
             <p className="text-sm text-red-600 text-center">{errors.submit}</p>
             <p className="text-sm text-red-500 text-center mt-2">
@@ -325,8 +327,8 @@ export default function ResetPassword() {
           </div>
         )} */}
 
-        {/* Token Expiry Warning */}
-        {/* {!token && (
+          {/* Token Expiry Warning */}
+          {/* {!token && (
           <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
             <p className="text-sm text-yellow-700 text-center">
               Invalid or expired reset link. Please request a new password reset.
@@ -334,23 +336,24 @@ export default function ResetPassword() {
           </div>
         )} */}
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isLoading || !token}
-          size='large'
-          className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 w-full"
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center">
-              <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-              Resetting Password...
-            </div>
-          ) : (
-            'RESET PASSWORD'
-          )}
-        </Button>
-      </form>
-    </div>
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={isLoading || !token}
+            size='large'
+            className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 w-full"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                Resetting Password...
+              </div>
+            ) : (
+              'RESET PASSWORD'
+            )}
+          </Button>
+        </form>
+      </div>
+    </Suspense>
   );
 }
