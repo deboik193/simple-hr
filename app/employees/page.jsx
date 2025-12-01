@@ -43,38 +43,42 @@ export default function Employees() {
   const { addToast } = useToast();
 
   const fetchEmployees = async () => {
-    const res = await getEmployees();
-    setEmployees(res.data);
-    setFilteredEmployees(res.data);
+    setLoading(true);
+
+    try {
+      const res = await getEmployees();
+      setEmployees(res.data);
+      setFilteredEmployees(res.data);
+    } catch (error) {
+      addToast(`Failed to load. Please try again.`, 'error')
+    } finally {
+      setLoading(false);
+    }
   }
 
   const getDepartments = async () => {
-    const fetchDept = await getDepartment()
-    setDepartments(fetchDept.data);
+    try {
+      const fetchDept = await getDepartment()
+      setDepartments(fetchDept.data);
+    } catch (error) {
+      addToast(`Failed to load. Please try again.`, 'error')
+    }
   }
 
   const getBranches = async () => {
-    const fetchBranch = await getBranch()
-    setBranches(fetchBranch.data);
+    try {
+      const fetchBranch = await getBranch()
+      setBranches(fetchBranch.data);
+    } catch (error) {
+      addToast(`Failed to load. Please try again.`, 'error')
+    }
   }
 
   useEffect(() => {
-    setLoading(true);
+    fetchEmployees();
+    getDepartments();
+    getBranches();
 
-    const loadData = async () => {
-
-      try {
-        fetchEmployees();
-        getDepartments();
-        getBranches();
-      } catch (error) {
-        addToast(`Failed to load. Please try again.`, 'error')
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
   }, []);
 
   // Filter employees based on filters
@@ -172,7 +176,7 @@ export default function Employees() {
     setShowDetailModal(true);
   };
 
-  const handleDeleteEmployee = async(employeeId) => {
+  const handleDeleteEmployee = async (employeeId) => {
     if (window.confirm('Are you sure you want to delete this employee?')) {
 
       const res = await deleteUser(employeeId);
@@ -206,7 +210,7 @@ export default function Employees() {
     setLoading(true);
 
     const res = await updateUser({
-      ...updatedEmployee, department: updatedEmployee?.department._id, managerId: updatedEmployee?.managerId._id, branch: updatedEmployee?.branch._id, _id: undefined, employeeId: undefined, leaveBalance: undefined, isActive: undefined, preferences: undefined, createdAt: undefined, updatedAt: undefined, __v: undefined
+      ...updatedEmployee, department: updatedEmployee?.department, managerId: updatedEmployee?.managerId?._id, branch: updatedEmployee?.branch._id, _id: undefined, employeeId: undefined, leaveBalance: undefined, isActive: undefined, preferences: undefined, createdAt: undefined, updatedAt: undefined, __v: undefined
     }, selectedEmployee._id);
 
     if (res.error) {
@@ -223,6 +227,15 @@ export default function Employees() {
   };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Show loader while data is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -244,167 +257,159 @@ export default function Employees() {
         </Button>
       </div>
 
-      {loading ?
-        (<Loader />) :
-        (
-          <>
-            {/* Filters */}
-            <div className="bg-white rounded-lg border border-gray-200 text-gray-600 p-4">
-              <div className="flex flex-col lg:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                      type="search"
-                      placeholder="Search employees by name, email, or ID..."
-                      value={filters.search}
-                      onChange={(e) => handleFilterChange('search', e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-4 flex-wrap">
-                  <select
-                    value={filters.department}
-                    onChange={(e) => handleFilterChange('department', e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="all">All Departments</option>
-                    {departments.map((dept) => (
-                      <option key={dept._id} value={dept.name}>{dept.name}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={filters.role}
-                    onChange={(e) => handleFilterChange('role', e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="all">All Roles</option>
-                    {ROLE.map((role) => (
-                      <option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={filters.branch}
-                    onChange={(e) => handleFilterChange('branch', e.target.value)}
-                    className="border capitalize border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="all">All Branches</option>
-                    {branches.map((branch) => (
-                      <option key={branch._id} value={branch.name} className='capitalize'>{branch.name}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={filters.status}
-                    onChange={(e) => handleFilterChange('status', e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
+      {/* Filters */}
+      <div className="bg-white rounded-lg border border-gray-200 text-gray-600 p-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="search"
+                placeholder="Search employees by name, email, or ID..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
             </div>
+          </div>
+          <div className="flex gap-4 flex-wrap">
+            <select
+              value={filters.department}
+              onChange={(e) => handleFilterChange('department', e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="all">All Departments</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept.name}>{dept.name}</option>
+              ))}
+            </select>
+            <select
+              value={filters.role}
+              onChange={(e) => handleFilterChange('role', e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="all">All Roles</option>
+              {ROLE.map((role) => (
+                <option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
+              ))}
+            </select>
+            <select
+              value={filters.branch}
+              onChange={(e) => handleFilterChange('branch', e.target.value)}
+              className="border capitalize border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="all">All Branches</option>
+              {branches.map((branch) => (
+                <option key={branch._id} value={branch.name} className='capitalize'>{branch.name}</option>
+              ))}
+            </select>
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-            {/* Employees Table */}
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      {columns.map((column) => (
-                        <th key={column} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {column}
-                        </th>
+      {/* Employees Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                {columns.map((column) => (
+                  <th key={column} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {column}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {currentEmployees.map((employee) => (
+                <tr key={employee._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {/* Employee info with new fields */}
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <span className="text-sm uppercase font-medium text-green-600">
+                          {employee.fullName.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-medium capitalize text-gray-900">{employee.fullName}</div>
+                        <div className="text-sm text-gray-500">{employee.email}</div>
+                        <div className="text-xs text-gray-400">{employee.employeeId}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900 capitalize">{employee.position}</div>
+                    <div className="text-sm text-gray-500 capitalize">{employee?.department.name}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 capitalize">{employee?.branch.name}</div>
+                    <div className="text-sm capitalize text-gray-500">{employee.levels}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex flex-col gap-1">
+                      {getRoleBadge(employee.role)}
+                      {getStatusBadge(employee.isActive)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex gap-2">
+                      {LEAVETYPE.slice(0, 3).map((type) => (
+                        <div key={type} className="text-center">
+                          <div className="font-semibold text-green-700">{employee.leaveBalance?.[type] || 0}</div>
+                          <div className="text-xs text-green-600 capitalize">{type}</div>
+                        </div>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentEmployees.map((employee) => (
-                      <tr key={employee._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {/* Employee info with new fields */}
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                              <span className="text-sm uppercase font-medium text-green-600">
-                                {employee.fullName.split(' ').map(n => n[0]).join('')}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="font-medium capitalize text-gray-900">{employee.fullName}</div>
-                              <div className="text-sm text-gray-500">{employee.email}</div>
-                              <div className="text-xs text-gray-400">{employee.employeeId}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 capitalize">{employee.position}</div>
-                          <div className="text-sm text-gray-500 capitalize">{employee?.department.name}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 capitalize">{employee?.branch.name}</div>
-                          <div className="text-sm capitalize text-gray-500">{employee.levels}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex flex-col gap-1">
-                            {getRoleBadge(employee.role)}
-                            {getStatusBadge(employee.isActive)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex gap-2">
-                            {LEAVETYPE.slice(0, 3).map((type) => (
-                              <div key={type} className="text-center">
-                                <div className="font-semibold text-green-700">{employee.leaveBalance?.[type] || 0}</div>
-                                <div className="text-xs text-green-600 capitalize">{type}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleViewEmployee(employee)}
-                              className="text-green-600 cursor-pointer hover:text-green-900 p-1"
-                              title="View Details"
-                            >
-                              <FiEye size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleEditEmployee(employee)}
-                              className="text-gray-600 cursor-pointer hover:text-gray-900 p-1"
-                              title="Edit"
-                            >
-                              <FiEdit size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteEmployee(employee._id)}
-                              className="text-red-600 cursor-pointer hover:text-red-900 p-1"
-                              title="Delete"
-                            >
-                              <FiTrash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleViewEmployee(employee)}
+                        className="text-green-600 cursor-pointer hover:text-green-900 p-1"
+                        title="View Details"
+                      >
+                        <FiEye size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleEditEmployee(employee)}
+                        className="text-gray-600 cursor-pointer hover:text-gray-900 p-1"
+                        title="Edit"
+                      >
+                        <FiEdit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEmployee(employee._id)}
+                        className="text-red-600 cursor-pointer hover:text-red-900 p-1"
+                        title="Delete"
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-
-              {/* Empty State */}
-              {filteredEmployees.length === 0 && currentEmployees.length === 0 && (
-                <div className="text-center py-12">
-                  <FiUser className="mx-auto text-gray-400" size={48} />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">No employees found</h3>
-                  <p className="mt-2 text-gray-600">Try adjusting your search or filters</p>
-                </div>
-              )}
-            </div>
-          </>
+        {/* Empty State */}
+        {filteredEmployees.length === 0 && (
+          <div className="text-center py-12">
+            <FiUser className="mx-auto text-gray-400" size={48} />
+            <h3 className="mt-4 text-lg font-medium text-gray-900">No employees found</h3>
+            <p className="mt-2 text-gray-600">Try adjusting your search or filters</p>
+          </div>
         )}
-
+      </div>
 
       {/* Pagination */}
       {filteredEmployees.length > 0 && (

@@ -68,7 +68,6 @@ export default function Login() {
 
     try {
       const res = await loginUser(formData);
-      console.log(res);
 
       if (res?.error) {
         addToast(res?.error, 'error')

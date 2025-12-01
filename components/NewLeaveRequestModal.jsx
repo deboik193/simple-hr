@@ -10,6 +10,7 @@ import {
 import { LEAVETYPE } from '@/constant/constant';
 import CloudinaryFileUpload from './CloudinaryFileUpload';
 import Button from './Button';
+import { useToast } from '@/context/toastContext';
 
 export default function NewLeaveRequestModal({ onSave, onClose }) {
   const [formData, setFormData] = useState({
@@ -25,10 +26,12 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [totalDays, setTotalDays] = useState(0);
   const [reliefOfficere, setReliefOfficer] = useState([]);
+  const { addToast } = useToast();
 
   const reliefOfficers = async () => {
     const res = await getAllUser();
     setReliefOfficer(res.data)
+    console.log('all usererrrrrrrrrrrrrrrrrr', res)
   }
 
   // Calculate total days when dates change
@@ -106,9 +109,14 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
     try {
 
       const res = await requestLeave({ ...formData, totalDays })
-      console.log('hshshshsh', res)
-      onSave({ ...formData, totalDays });
-      onClose();
+
+      if (res?.error) {
+        addToast(res?.error, 'error')
+      } else {
+        addToast(res?.message, 'success')
+        onSave({ ...formData, totalDays });
+        onClose();
+      }
 
     } catch (error) {
       setErrors({ submit: 'Failed to create leave request. Please try again.' });
@@ -358,7 +366,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+          <div className="flex gap-3 pt-6 border-t border-gray-200">
             <Button
               type="button"
               onClick={onClose}

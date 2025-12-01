@@ -10,10 +10,66 @@ import { withErrorHandler, ApiResponse, AppError } from "@/libs/errorHandler";
 import { getAuthUser } from "@/libs/middleware";
 import dbConnect from "@/libs/mongodb";
 import { authValidation } from "@/libs/validator";
+import { emailService } from "@/libs/emailService";
+import mongoose from "mongoose";
+
+export const GET = withErrorHandler(async (req) => {
+  await dbConnect();
+
+  const { user, errors } = await getAuthUser(req)
+  if (errors) return errors;
+  if (!user) throw new AppError('Unauthorized', 401);
+
+
+  let filter = {};
+
+  // =============================
+  // 1️⃣ ADMIN / SUPER-ADMIN / HR
+  // =============================
+  if (["admin", "hr"].includes(user.role)) {
+    filter = {}; // full access
+  }
+
+  // -----------------------------------------
+  // 2️⃣ MANAGER → Department + Relief
+  // -----------------------------------------
+  else if (user.role === "manager") {
+    // First, find employees in the manager's department
+    const departmentEmployees = await mongoose.model('User').find(
+      { department: user.department },
+      '_id'
+    );
+
+    const employeeIds = departmentEmployees.map(emp => emp._id);
+
+    filter = {
+      $or: [
+        { employeeId: { $in: employeeIds } }, // Leave requests from department employees
+        { reliefOfficerId: user._id } // Leave requests where manager is relief officer
+      ],
+    }
+  }
+
+  // -----------------------------------------
+  // 3️⃣ EMPLOYEE → Own + Relief
+  // -----------------------------------------
+  else if (user.role === "employee") {
+    filter = {
+      $or: [
+        { employeeId: user._id },
+        { reliefOfficerId: user._id }
+      ],
+    };
+  }
+
+  const leaveRequest = await LeaveRequest.find(filter).sort({ createdAt: -1 })
+    .populate([{ path: 'employeeId', populate: { path: 'department' } }, { path: 'reliefOfficerId' }, { path: 'approvalHistory.approvedBy' }]);
+
+    return ApiResponse.success(leaveRequest, 'success');
+});
 
 export const POST = withErrorHandler(async (req) => {
   await dbConnect();
-  console.log('body.........................')
 
   const { user, errors } = await getAuthUser(req);
   if (errors) return errors;
@@ -24,11 +80,10 @@ export const POST = withErrorHandler(async (req) => {
   if (error) throw new AppError('Validation error: ' + error.details[0].message, 400);
 
   // Get user details
-  const userDetails = await User.findOne({ _id: user._id }).select('employeeId employmentType dateOfJoining department branch').populate('department', 'name code leaveSettings').populate('branch', 'name code leaveSettings');
-  ;
+  const userDetails = await User.findOne({ _id: user._id }).select('employeeId employmentType joinDate department branch email fullName').populate('department').populate('branch');
   if (!userDetails) throw new AppError('User details not found', 404);
 
-  const { employeeId, employmentType, dateOfJoining, department, branch } = userDetails;
+  const { employmentType, joinDate, department, branch, _id } = userDetails;
   // Check if user's department is active
   if (!department || !department.isActive) {
     throw new AppError('Your department is not active. Cannot apply for leave.', 400);
@@ -177,7 +232,7 @@ export const POST = withErrorHandler(async (req) => {
   }
 
   // 1. Check minimum service days eligibility
-  const serviceDays = Math.floor((new Date() - new Date(dateOfJoining)) / (1000 * 60 * 60 * 24));
+  const serviceDays = Math.floor((new Date() - new Date(joinDate)) / (1000 * 60 * 60 * 24));
   if (serviceDays < leavePolicy.eligibility.minServiceDays) {
     throw new AppError(
       `Not eligible for leave. Minimum service requirement: ${leavePolicy.eligibility.minServiceDays} days. Your service: ${serviceDays} days.`,
@@ -301,7 +356,7 @@ export const POST = withErrorHandler(async (req) => {
 
   const payload = {
     ...value,
-    employeeId,
+    employeeId: _id,
     totalDays,
     status,
     reliefStatus,
@@ -314,8 +369,10 @@ export const POST = withErrorHandler(async (req) => {
   const leaveRequest = await LeaveRequest.create(payload);
 
   // Populate the response with user details
-  await leaveRequest.populate('employeeId', 'name email employeeId');
-  await leaveRequest.populate('reliefOfficerId', 'name email employeeId');
+  await leaveRequest.populate('employeeId', 'fullName email employeeId');
+  await leaveRequest.populate('reliefOfficerId', 'fullName email employeeId');
 
-  return ApiResponse.created(leaveRequest, 'Leave request submitted successfully');
+  await emailService.notifyReliefOfficer(userDetails, reliefOfficer);
+
+  return ApiResponse.success(leaveRequest, 'Leave request submitted successfully');
 });

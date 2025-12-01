@@ -1,5 +1,5 @@
 // models/LeaveRequest.js
-const { LEAVETYPE, STATUS, APPROVALHISTORY } = require('@/constant/constant');
+const { LEAVETYPE, STATUS, APPROVALHISTORY, APPROVALLEVEL } = require('@/constant/constant');
 const mongoose = require('mongoose');
 
 const leaveRequestSchema = new mongoose.Schema({
@@ -53,7 +53,11 @@ const leaveRequestSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
-    role: String,
+    role: {
+      type: String,
+      enum: APPROVALLEVEL,
+      required: true
+    },
     action: {
       type: String,
       enum: APPROVALHISTORY

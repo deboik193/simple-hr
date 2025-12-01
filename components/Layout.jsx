@@ -1,27 +1,43 @@
 'use client';
 
+import { fetchMe } from '@/api';
+import { jwtDecode } from 'jwt-decode';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   FiFileText,
   FiSettings,
-  FiHelpCircle,
   FiBell,
   FiMenu,
   FiX,
   FiSearch,
   FiCalendar,
-  FiClock,
   FiBarChart2,
-  FiHeart,
-  FiUsers
+  FiUsers,
+  FiLogOut
 } from 'react-icons/fi';
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeNav, setActiveNav] = useState('');
+  const [role, setRoles] = useState('');
+  const [users, setUsers] = useState({})
   const pathname = usePathname();
+  const route = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) return;
+
+    const fetchUser = async () => {
+      const res = await fetchMe();
+      setUsers(res.data)
+    }
+
+    fetchUser();
+  }, [])
 
   // Load active navigation from localStorage on component mount
   useEffect(() => {
@@ -29,21 +45,29 @@ export default function Layout({ children }) {
     if (savedNav) {
       setActiveNav(savedNav);
     }
+
+
   }, []);
 
   // Save active navigation to localStorage whenever it changes
   useEffect(() => {
+
+    const token = localStorage.getItem('authToken');
+    const decoded = token ? jwtDecode(token) : undefined;
+
+    setRoles(decoded?.role);
+
     localStorage.setItem('activeNav', activeNav);
   }, [activeNav]);
 
   const navItems = [
-    { name: 'Dashboard', icon: FiBarChart2, link: '/' },
-    { name: 'Employees', icon: FiUsers, link: '/employees' },
-    { name: 'Leave Requests', icon: FiCalendar, link: '/leave-request' },
+    { name: 'Dashboard', icon: FiBarChart2, link: '/', role: true },
+    { name: 'Employees', icon: FiUsers, link: '/employees', role: ['admin', 'hr'].includes(role) },
+    { name: 'Leave Requests', icon: FiCalendar, link: '/leave-request', role: true },
     // { name: 'Time Off', icon: FiClock, link: '/time-off' },
     // { name: 'Reports', icon: FiFileText, link: '/reports' },
   ];
-  
+
   const bottomNavItems = [
     { name: 'Leave Policies', icon: FiFileText, link: '/leave-policy' },
     { name: 'Settings', icon: FiSettings, link: '/settings' },
@@ -51,9 +75,15 @@ export default function Layout({ children }) {
 
   const handleNavClick = (navName, path) => {
     setActiveNav(navName);
+
     setSidebarOpen(false);
     // You can add navigation logic here if using client-side routing
   };
+
+  const logOutUser = () => {
+    localStorage.removeItem('authToken')
+    route.replace('/auth/login')
+  }
 
   if (pathname.includes('/auth')) {
     return (
@@ -75,7 +105,7 @@ export default function Layout({ children }) {
           >
             {sidebarOpen ? <FiX size={24} className='text-green-600/30' /> : <FiMenu className='text-green-600/30' size={24} />}
           </button>
-          <h1 className="text-2xl font-bold text-green-600">LeaveTrack</h1>
+          <h1 className="text-2xl font-bold text-green-600">Simple HR</h1>
         </div>
 
         {/* Search Bar - Hidden on mobile, visible on desktop */}
@@ -99,8 +129,8 @@ export default function Layout({ children }) {
           </div>
 
           <div className="hidden sm:flex flex-col">
-            <div className="font-medium text-gray-700 text-sm lg:text-base">Jessica Jackson</div>
-            <div className="text-xs text-gray-400">HR Administrator</div>
+            <div className="font-medium text-gray-700 text-sm lg:text-base capitalize">{users.fullName}</div>
+            <div className="text-xs text-gray-400 capitalize">{users.role}</div>
           </div>
 
           {/* User Avatar for mobile */}
@@ -133,9 +163,9 @@ export default function Layout({ children }) {
               return (
                 <Link
                   key={item.name}
-                  onClick={() => handleNavClick(item.name, item.path)}
+                  onClick={() => handleNavClick(item.name, item.link)}
                   href={item.link}
-                  className={`w-full cursor-pointer flex items-center gap-3 p-3 rounded-md text-left transition-colors ${isActive
+                  className={`w-full cursor-pointer ${item.role ? 'flex' : 'hidden'} items-center gap-3 p-3 rounded-md text-left transition-colors ${isActive
                     ? 'bg-green-50 text-green-600 font-semibold border-r-2 border-green-600'
                     : 'text-gray-700 hover:bg-green-50'
                     }`}
@@ -150,7 +180,7 @@ export default function Layout({ children }) {
 
         <div className="p-4 border-t border-gray-200">
           <nav className="space-y-1">
-            {bottomNavItems.map((item) => {
+            {['admin', 'hr'].includes(role) && bottomNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeNav === item.name;
               return (
@@ -168,6 +198,10 @@ export default function Layout({ children }) {
                 </Link>
               );
             })}
+            <button onClick={logOutUser} className='text-red-700 hover:bg-red-50 w-full cursor-pointer flex items-center gap-3 p-3 rounded-md text-left transition-colors'>
+              <FiLogOut size={18} />
+              Logout
+            </button>
           </nav>
         </div>
       </aside>

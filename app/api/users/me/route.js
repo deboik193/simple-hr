@@ -4,7 +4,6 @@ import User from "@/models/User";
 import { getAuthUser } from '@/libs/middleware';
 import Department from "@/models/Department";
 
-// list all user
 export const GET = withErrorHandler(async (req) => {
   await dbConnect();
 
@@ -13,7 +12,7 @@ export const GET = withErrorHandler(async (req) => {
   if (errors) return errors;
   if (!user) throw new AppError('Unauthorized', 401);
 
-  const userData = await User.find({ isActive: true, _id: { $ne: user._id }, role: { $nin: ['admin'] } }).select('fullName email position role employeeId department').populate({ path: 'department' });
+  const userData = await User.findOne({ isActive: true, _id: user._id }).select('fullName email position role employeeId department').populate({ path: 'department' });
 
   return ApiResponse.success(userData, '');
 });

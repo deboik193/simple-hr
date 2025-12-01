@@ -6,12 +6,11 @@ import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import { useToast } from "@/context/toastContext";
 import { useState, useEffect } from "react";
-import { FiFileText, FiEdit2, FiTrash2, FiPlus, FiSearch, FiCalendar, FiX } from "react-icons/fi";
-
-const LEAVETYPE = ['annual', 'sick', 'personal', 'maternity', 'paternity', 'compassionate', 'unpaid', 'emergency'];
-const EMPLOYMENT_TYPES = ['full-time', 'part-time', 'contract'];
-const APPROVAL_LEVELS = ['manager', 'hr', 'department-head'];
-const ACCRUAL_TYPES = ['monthly', 'annual', 'none'];
+import { FiFileText, FiEdit2, FiPlus, FiSearch, FiCalendar, FiX } from "react-icons/fi";
+import { LEAVETYPE } from "@/constant/constant";
+import { EMPLOYEETYPE } from "@/constant/constant";;
+import { ROLE } from "@/constant/constant";
+import { ACCRUAL } from "@/constant/constant";
 
 export default function LeavePolicies() {
   const [loading, setLoading] = useState(true);
@@ -109,26 +108,20 @@ export default function LeavePolicies() {
 
   // Load initial data
   useEffect(() => {
-    setLoading(true);
-
-    const loadData = async () => {
-
-      try {
-        loadPolicies();
-      } catch (error) {
-        addToast(`Failed to load. Please try again.`, 'error')
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
+    loadPolicies();
   }, []);
 
   const loadPolicies = async () => {
+    setLoading(true);
 
-    const getLeavePolicies = await getLeavePolicy();
-    setLeavePolicies(getLeavePolicies.data);
+    try {
+      const getLeavePolicies = await getLeavePolicy();
+      setLeavePolicies(getLeavePolicies.data);
+    } catch (error) {
+      addToast(`Failed to load. Please try again.`, 'error');
+    } finally {
+      setLoading(false); // End loading
+    }
   };
 
   const handlePolicySubmit = async (e) => {
@@ -155,7 +148,7 @@ export default function LeavePolicies() {
         addToast(res.message, 'success')
       }
 
-      await loadPolicies()
+      loadPolicies()
       setLoading(false)
 
     } else {
@@ -172,7 +165,7 @@ export default function LeavePolicies() {
         addToast(res.message, 'success')
       }
 
-      await loadPolicies()
+      loadPolicies()
       setLoading(false)
     }
 
@@ -200,7 +193,7 @@ export default function LeavePolicies() {
         addToast(res.message, 'success')
       }
 
-      await loadPolicies()
+      loadPolicies()
     }
   };
 
@@ -333,6 +326,15 @@ export default function LeavePolicies() {
     });
   };
 
+  // Show loader while data is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -355,131 +357,121 @@ export default function LeavePolicies() {
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading ? (
-          <Loader />
-        ) : (
-          <>
-
-            {filteredPolicies?.length === 0 ? (
-              <div className="text-center py-12">
-                <FiFileText className="mx-auto w-12 h-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No policies found</h3>
-                <p className="text-gray-600 mb-4">
-                  {searchTerm || filterType !== 'all' || filterStatus !== 'all'
-                    ? 'Try adjusting your search or filters'
-                    : 'Get started by creating your first leave policy'
-                  }
-                </p>
-                {!searchTerm && filterType === 'all' && filterStatus === 'all' && (
-                  <Button onClick={() => setShowCreateForm(true)}>
-                    Create Policy
-                  </Button>
-                )}
+        {/* Search and Filter */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search policies by name or type..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
               </div>
-            ) : (
-              <>
-                {/* Search and Filter */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                      <div className="relative">
-                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          placeholder="Search policies by name or type..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <select
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                        className="px-3 w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      >
-                        <option value="all">All Types</option>
-                        {LEAVETYPE.map(type => (
-                          <option key={type} value={type}>{getLeaveTypeDisplay(type)}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
-                  </div>
+            </div>
+            <div className="flex gap-4">
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="px-3 w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="all">All Types</option>
+                {LEAVETYPE.map(type => (
+                  <option key={type} value={type}>{getLeaveTypeDisplay(type)}</option>
+                ))}
+              </select>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Policies Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {filteredPolicies?.map((policy) => (
+            <div key={policy._id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-lg capitalize">{policy.policyName}</h3>
+                  <p className="text-sm text-gray-600">{getLeaveTypeDisplay(policy.leaveType)}</p>
                 </div>
+                <span className={`inline-block px-2 py-1 text-xs rounded-full ${policy.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                  {policy.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
 
-                {/* Policies Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  {filteredPolicies?.map((policy) => (
-                    <div key={policy._id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 text-lg capitalize">{policy.policyName}</h3>
-                          <p className="text-sm text-gray-600">{getLeaveTypeDisplay(policy.leaveType)}</p>
-                        </div>
-                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${policy.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                          {policy.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span>Accrual:</span>
+                  <span className="font-medium">{policy.accrual.type} ({policy.accrual.rate} days)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Max Balance:</span>
+                  <span className="font-medium">{policy.accrual.maxBalance} days</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Carry Over:</span>
+                  <span className="font-medium">{policy.carryOver.enabled ? 'Yes' : 'No'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Relief Officer:</span>
+                  <span className="font-medium">
+                    {policy.approvalWorkflow.requireReliefOfficer ? 'Required' : 'Not Required'}
+                  </span>
+                </div>
+              </div>
 
-                      <div className="space-y-3 text-sm text-gray-600">
-                        <div className="flex justify-between">
-                          <span>Accrual:</span>
-                          <span className="font-medium">{policy.accrual.type} ({policy.accrual.rate} days)</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Max Balance:</span>
-                          <span className="font-medium">{policy.accrual.maxBalance} days</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Carry Over:</span>
-                          <span className="font-medium">{policy.carryOver.enabled ? 'Yes' : 'No'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Relief Officer:</span>
-                          <span className="font-medium">
-                            {policy.approvalWorkflow.requireReliefOfficer ? 'Required' : 'Not Required'}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                        <span className="text-xs text-gray-500">
-                          Created: {new Date(policy.createdAt).toLocaleDateString()}
-                        </span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEdit(policy)}
-                            className="p-2 text-gray-400 hover:text-teal-600 transition-colors cursor-pointer"
-                          >
-                            <FiEdit2 className="w-4 h-4" />
-                          </button>
-                          {/* <button
+              <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+                <span className="text-xs text-gray-500">
+                  Created: {new Date(policy.createdAt).toLocaleDateString()}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(policy)}
+                    className="p-2 text-gray-400 hover:text-teal-600 transition-colors cursor-pointer"
+                  >
+                    <FiEdit2 className="w-4 h-4" />
+                  </button>
+                  {/* <button
                             onClick={() => handleDelete(policy._id)}
                             className="p-2 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
                           >
                             <FiTrash2 className="w-4 h-4" />
                           </button> */}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
-              </>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredPolicies?.length === 0 &&
+          <div className="text-center py-12">
+            <FiFileText className="mx-auto w-12 h-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No policies found</h3>
+            <p className="text-gray-600 mb-4">
+              {searchTerm || filterType !== 'all' || filterStatus !== 'all'
+                ? 'Try adjusting your search or filters'
+                : 'Get started by creating your first leave policy'
+              }
+            </p>
+            {!searchTerm && filterType === 'all' && filterStatus === 'all' && (
+              <Button onClick={() => setShowCreateForm(true)}>
+                Create Policy
+              </Button>
             )}
-          </>
-        )}
+          </div>
+        }
 
         {/* Create/Edit Policy Form Modal */}
         {showCreateForm && (
@@ -535,7 +527,7 @@ export default function LeavePolicies() {
                           Employment Types
                         </label>
                         <div className="space-y-2">
-                          {EMPLOYMENT_TYPES.map(type => (
+                          {EMPLOYEETYPE.map(type => (
                             <label key={type} className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -573,7 +565,7 @@ export default function LeavePolicies() {
                           onChange={(e) => updatePolicyAccrual('type', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
-                          {ACCRUAL_TYPES.map(type => (
+                          {ACCRUAL.map(type => (
                             <option key={type} value={type}>{type}</option>
                           ))}
                         </select>
@@ -652,7 +644,7 @@ export default function LeavePolicies() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Approval Levels</label>
                         <div className="space-y-2">
-                          {APPROVAL_LEVELS.map(level => (
+                          {ROLE.map(level => (
                             <label key={level} className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -901,6 +893,6 @@ export default function LeavePolicies() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }

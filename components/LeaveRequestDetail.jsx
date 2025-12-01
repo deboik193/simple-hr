@@ -1,9 +1,14 @@
 // components/LeaveRequestDetail.js
 'use client';
 
+import { jwtDecode } from 'jwt-decode';
 import { FiX, FiCalendar, FiUser, FiClock, FiCheckCircle, FiXCircle, FiFileText, FiPhone } from 'react-icons/fi';
+import Button from './Button';
 
 export default function LeaveRequestDetail({ request, onClose, onAction, canTakeAction }) {
+  const token = localStorage.getItem('authToken');
+  const decoded = jwtDecode(token);
+
   const getStatusDisplay = (status) => {
     const statusMap = {
       'draft': 'Draft',
@@ -51,9 +56,9 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-teal-100 rounded-lg transition-colors cursor-pointer"
           >
-            <FiX size={20} />
+            <FiX size={20} className='text-teal-300' />
           </button>
         </div>
 
@@ -69,7 +74,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
               <div className="space-y-2">
                 <div>
                   <p className="text-sm text-gray-600">Name</p>
-                  <p className="font-medium text-gray-900">{request.employeeId.name}</p>
+                  <p className="font-medium text-gray-900">{request.employeeId.fullName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Employee ID</p>
@@ -77,11 +82,11 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Department</p>
-                  <p className="font-medium text-gray-900">{request.employeeId.department}</p>
+                  <p className="font-medium text-gray-900">{request.employeeId.department.name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Position</p>
-                  <p className="font-medium text-gray-900">{request.employeeId.position}</p>
+                  <p className="font-medium text-gray-900 capitalize">{request.employeeId.position}</p>
                 </div>
               </div>
             </div>
@@ -124,15 +129,19 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
           </div>
 
           {/* Reason & Handover */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* Reason */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <FiFileText className="text-teal-600" />
-                Reason for Leave
-              </h3>
-              <p className="text-gray-700">{request.reason}</p>
-            </div>
+
+            {decoded?.id === request?.reliefOfficerId._id ? '' :
+
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <FiFileText className="text-teal-600" />
+                  Reason for Leave
+                </h3>
+                <p className="text-gray-700">{request.reason}</p>
+              </div>
+            }
 
             {/* Handover Information */}
             <div className="bg-gray-50 rounded-lg p-4">
@@ -164,7 +173,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">Assigned Officer</p>
-                <p className="font-medium text-gray-900">{request.reliefOfficerId.name}</p>
+                <p className="font-medium text-gray-900">{request.reliefOfficerId.fullName}</p>
                 <p className="text-sm text-gray-500">{request.reliefOfficerId.employeeId}</p>
               </div>
               <div>
@@ -191,12 +200,12 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
                 <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200">
                   <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-medium text-teal-600">
-                      {history.approvedBy.name.split(' ').map(n => n[0]).join('')}
+                      {history.approvedBy.fullName.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">{history.approvedBy.name}</p>
+                      <p className="font-medium text-gray-900">{history.approvedBy.fullName}</p>
                       <span className="text-xs text-gray-500 capitalize">{getRoleDisplay(history.role)}</span>
                     </div>
                     <p className="text-sm text-gray-700 capitalize">{getActionDisplay(history.action)}</p>
@@ -216,24 +225,25 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
           </div>
 
           {/* Action Buttons */}
-          {canTakeAction && (
-            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-              <button
-                onClick={() => onAction('reject')}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
-              >
-                <FiXCircle size={16} />
-                Reject
-              </button>
-              <button
-                onClick={() => onAction('approve')}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <FiCheckCircle size={16} />
-                Approve
-              </button>
-            </div>
-          )}
+          {request?.status.includes('pending') && request.reliefStatus !== 'declined' &&
+            <>
+              <div className="flex gap-3 pt-6 border-t border-gray-200">
+                <Button
+                  onClick={() => onAction('reject')}
+                  variant='outline'
+                  size='large'
+                >
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => onAction('approve')}
+                  size='large'
+                >
+                  Approve
+                </Button>
+              </div>
+            </>
+          }
         </div>
       </div>
     </div>

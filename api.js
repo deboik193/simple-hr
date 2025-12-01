@@ -13,6 +13,10 @@ export const getAllUser = async () => {
   return await fetchClient.get(`/api/users`);
 };
 
+export const fetchMe = async () => {
+  return await fetchClient.get(`/api/users/me`);
+};
+
 export const getEmployees = async () => {
   return await fetchClient.get("/api/users/employee");
 };
@@ -91,7 +95,31 @@ export const deleteUser = async (id) => {
 }
 
 export const requestLeave = async (data) => {
-  return await fetchClient.post( `/api/leave-request`, data);
+  return await fetchClient.post(`/api/leave-request`, data);
+}
+
+export const declineLeaveByReliefOfficer = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/relief-decline`, { notes: data });
+}
+
+export const approveLeaveByReliefOfficer = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/relief-approve`, { notes: data });
+}
+
+export const approveLeaveByManager = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/manager-approve`, { notes: data });
+}
+
+export const declineLeaveByManager = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/manager-decline`, { notes: data });
+}
+
+export const approveLeaveByHR = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/hr-approve`, { notes: data });
+}
+
+export const fetchLeave = async () => {
+  return await fetchClient.get('/api/leave-request')
 }
 
 export const uploadCloudinary = async (data) => {

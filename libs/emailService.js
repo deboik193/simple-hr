@@ -33,7 +33,7 @@ class EmailService {
       const html = template(data);
 
       const payload = {
-        Recipients: { To: [to] },
+        Recipients: { To: Array.isArray(to) ? to : [to] },
         Content: {
           From: `${this.fromName} <${this.fromEmail}>`,
           Subject: subject,
@@ -98,6 +98,97 @@ class EmailService {
         password: user.employeeId
       }
     );
+  }
+
+  async notifyReliefOfficer(user, reliefOfficer) {
+    return this.sendEmail(
+      reliefOfficer.email,
+      'Pending Relief Officer',
+      'reliefOfficer',
+      {
+        name: reliefOfficer.fullName,
+        loginUrl: `${process.env.NEXTAUTH_URL}/auth/login`,
+        employeeName: user.fullName,
+      }
+    );
+  }
+
+  async notifyDeclinedLeaveRequest(leaveRequest, declineReason, manager) {
+    const { employeeId, reliefOfficerId, startDate, endDate } = leaveRequest;
+
+    return this.sendEmail(
+      [employeeId.email, manager.managerId.email],
+      'Leave Request Declined by Relief Officer',
+      'leaveDeclinedEmployee',
+      {
+        managerName: manager?.managerId.fullName,
+        employeeName: employeeId.fullName,
+        reliefOfficerName: reliefOfficerId.fullName,
+        declineReason: declineReason?.notes,
+        startDate: startDate.toDateString(),
+        endDate: endDate.toDateString(),
+      }
+    )
+  }
+
+  async notifyManagerApproval(leaveRequest, manager) {
+    const { employeeId } = leaveRequest;
+
+    return this.sendEmail(
+      manager.email,
+      'Leave Request Notification',
+      'manager',
+      {
+        name: manager.fullName,
+        employeeName: employeeId.fullName,
+        loginUrl: `${process.env.NEXTAUTH_URL}/auth/login`,
+      }
+    )
+  }
+
+  async notifyHRApproval(leaveRequest, hr) {
+    const { employeeId } = leaveRequest;
+
+    return this.sendEmail(
+      hr.email,
+      'Leave Request Notification',
+      'hr',
+      {
+        name: hr.fullName,
+        employeeName: employeeId.fullName,
+        loginUrl: `${process.env.NEXTAUTH_URL}/auth/login`,
+      }
+    )
+  }
+
+  async notifyDeclinedLeaveRequestEmployeeOnly(leaveRequest, declineReason) {
+    const { employeeId, startDate, endDate } = leaveRequest;      
+    return this.sendEmail(
+      employeeId.email,
+      'Leave Request Declined by Manager',
+      'leaveDeclinedEmployeeOnly',
+      {
+        employeeName: employeeId.fullName,
+        declineReason: declineReason?.notes,
+        startDate: startDate.toDateString(),
+        endDate: endDate.toDateString(),
+      }
+    )
+  }
+
+  async notifyFinalApproval(leaveRequest) {
+    const { employeeId, reliefOfficerId, startDate, endDate } = leaveRequest; 
+    return this.sendEmail(
+      [employeeId.email, reliefOfficerId.email],
+      'Leave Request Approved',
+      'leaveApprovedAll',
+      {
+        employeeName: employeeId.fullName,  
+        reliefOfficerName: reliefOfficerId.fullName,
+        startDate: startDate.toDateString(),
+        endDate: endDate.toDateString(),
+      }
+    )
   }
 
   // ... other email methods

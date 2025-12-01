@@ -3,11 +3,12 @@ import { getAuthUser } from "@/libs/middleware";
 import dbConnect from "@/libs/mongodb";
 import User from "@/models/User";
 import { authValidation } from "@/libs/validator";
+import LeaveBalance from "@/models/LeaveBalance";
 
 export const PATCH = withErrorHandler(async (req, { params }) => {
   await dbConnect();
 
-  const id = params.id;
+  const { id } = await params;
 
   const { user, errors } = await getAuthUser(req)
   if (errors) return errors;
@@ -55,7 +56,16 @@ export const DELETE = withErrorHandler(async (req, { params }) => {
     throw new AppError('User does not exist', 404);
   }
 
-  await User.findByIdAndDelete(id);
+  await User.findByIdAndUpdate(
+    id,
+    {
+      isActive: false,
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+
+  await LeaveBalance.deleteMany({ userId: id });
 
   return ApiResponse.success({}, 'Employee deleted successfully');
 });

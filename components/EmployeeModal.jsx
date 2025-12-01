@@ -328,6 +328,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                   <input
                     type="date"
                     value={formData.joinDate}
+                    disabled={employee}
                     onChange={(e) => handleChange('joinDate', e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />

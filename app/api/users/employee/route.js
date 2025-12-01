@@ -9,6 +9,8 @@ import { hashPassword } from "@/libs/auth";
 import InitialLeaveBalance from "@/models/InitialLeaveBalance";
 import { LEAVETYPE } from "@/constant/constant";
 import { emailService } from "@/libs/emailService";
+import LeaveBalance from "@/models/LeaveBalance";
+import LeavePolicy from "@/models/LeavePolicy";
 
 export const GET = withErrorHandler(async (req) => {
   await dbConnect();
@@ -51,7 +53,7 @@ export const POST = withErrorHandler(async (req) => {
   const employeeCount = await User.countDocuments();
 
   //  Generate next employee ID
-  const employeeId = `${value.fullName?.split(' ').map(n => n[0]).join('') }${String(employeeCount + 1).padStart(3, '0')}`;
+  const employeeId = `${value.fullName?.split(' ').map(n => n[0]).join('')}${String(employeeCount + 1).padStart(3, '0')}`;
   const password = await hashPassword(employeeId.toLocaleLowerCase());
 
   const InitialBalance = await InitialLeaveBalance.findOne({ _id: '68ff46338509515e3f0f46ac' }); // Replace with actual ID or criteria
@@ -60,15 +62,52 @@ export const POST = withErrorHandler(async (req) => {
     acc[type] = InitialBalance[type];
     return acc;
   }, {})
-  
-  //  Add employeeId to user data before saving
+
+  //  1. Add employeeId to user data before saving
   const createNewUser = await User.create({
     ...value,
     employeeId,
     password,
     leaveBalance
   });
-  
+
+  // 2. Get active leave policies for this employment type
+  const leavePolicies = await LeavePolicy.find({
+    isActive: true,
+    'eligibility.employmentTypes': createNewUser.employmentType
+  });
+
+  // 3. Create leave balance records for each applicable policy
+  const currentYear = new Date().getFullYear();
+
+  for (const policy of leavePolicies) {
+    await LeaveBalance.create({
+      userId: createNewUser._id,
+      leaveType: policy.leaveType,
+      balance: calculateInitialBalance(policy) || 0, // Initial balance
+      accrualRate: policy.accrual.rate,
+      maxAccrual: policy.accrual.maxBalance,
+      carryOverLimit: policy.carryOver.enabled ? policy.carryOver.maxDays : 0,
+      carryOverUsed: 0,
+      fiscalYear: currentYear
+    });
+  }
+
+  function calculateInitialBalance(policy) {
+    // Pro-rate based on join date, or use policy default
+    const joinDate = new Date(createNewUser.joinDate);
+    const today = new Date();
+    const monthsWorked = (today.getFullYear() - joinDate.getFullYear()) * 12 +
+      (today.getMonth() - joinDate.getMonth());
+
+    if (monthsWorked <= 0) return 0;
+
+    return Math.min(
+      monthsWorked * policy.accrual.rate,
+      policy.accrual.maxBalance
+    );
+  }
+
   await emailService.sendWelcomeEmail(createNewUser);
 
   return ApiResponse.success(createNewUser, 'Employee created successfully');

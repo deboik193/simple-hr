@@ -124,4 +124,310 @@ export const emailTemplates = {
     </body>
     </html>
   `,
+
+  reliefOfficer: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .button { 
+          display: inline-block; 
+          background: #0f766e;
+          color: white; 
+          padding: 12px 24px; 
+          text-decoration: none; 
+          border-radius: 5px; 
+          margin: 20px 0; 
+        }
+        a.button { color: white; }
+        .footer { 
+          margin-top: 30px; 
+          padding-top: 20px; 
+          border-top: 1px solid #eee; 
+          color: #666; 
+          font-size: 14px; 
+        }
+        .url { 
+          word-break: break-all; 
+          color: #0070f3; 
+          font-size: 14px; 
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Relief Officer Notification</h1>
+        </div>
+        
+        <p>Hello <strong>${data.name}</strong>,</p>
+        
+        <p>
+          You have been appointed as the <strong>Relief Officer</strong> for 
+          <strong>${data.employeeName}</strong>. There is a pending leave request that requires 
+          your action. Please log in to Simple HR to review and approve or decline the request.
+        </p>
+
+        <div style="text-align: center;">
+          <a href="${data.loginUrl}" class="button">Login to Simple HR</a>
+        </div>
+
+        <div class="footer">
+          <p>If the button above does not work, copy and paste this URL into your browser:</p>
+          <p class="url">${data.loginUrl}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+`,
+
+  leaveDeclinedEmployee: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .highlight { color: #b91c1c; font-weight: bold; }
+        .footer { 
+          margin-top: 30px; 
+          padding-top: 20px; 
+          border-top: 1px solid #eee; 
+          color: #666; 
+          font-size: 14px; 
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Leave Request Declined</h1>
+        </div>
+
+        <p>Hello,</p>
+
+        <p>
+          This is to notify you that the leave request submitted by 
+          <strong>${data.employeeName}</strong> for the period of 
+          <strong>${data.startDate}</strong> to 
+          <strong>${data.endDate}</strong> has been 
+          <span class="highlight">declined</span> by the assigned Relief Officer 
+          <strong>${data.reliefOfficerName}</strong>.
+        </p>
+
+        <p><strong>Reason for Decline:</strong></p>
+        <p>${data.declineReason}</p>
+
+        <p>
+          If further action is required, the manager 
+          <strong>${data.managerName}</strong> may follow up or provide additional guidance.
+        </p>
+
+        <div class="footer">
+          <p>This is an automated message from Simple HR.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+`,
+
+  leaveDeclinedEmployeeOnly: (data) => `
+    <!DOCTYPE html>
+    <html>        
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .highlight { color: #b91c1c; font-weight: bold; }
+        .footer { 
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          color: #666;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Leave Request Declined</h1>
+        </div>
+        <p>Hello, ${data.employeeName}</p>
+
+        <p>
+          This is to notify you that your leave request for the period of 
+          <strong>${data.startDate}</strong> to 
+          <strong>${data.endDate}</strong> has been 
+          <span class="highlight">declined</span> by your manager.
+        </p>
+        <p><strong>Reason for Decline:</strong></p>
+        <p>${data.declineReason}</p>  
+        <div class="footer">
+          <p>This is an automated message from Simple HR.</p>
+        </div>
+      </div>
+    </body>   
+    </html>
+`,
+
+  manager: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .highlight { color: #b91c1c; font-weight: bold; }
+          .button {
+          display: inline-block;
+          background: #0f766e;
+          color: white;
+          padding: 12px 24px;
+          text-decoration: none;
+          border-radius: 5px;
+          margin: 20px 0;
+        }
+        a.button { color: white; }
+        .footer { 
+          margin-top: 30px; 
+          padding-top: 20px; 
+          border-top: 1px solid #eee; 
+          color: #666; 
+          font-size: 14px; 
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Manager Leave Approval Notification</h1>
+        </div>
+
+        <p>Hello <strong>${data.name}</strong>,</p>
+        
+        <p>
+          There is a pending leave request that requires 
+          your action for <strong>${data.employeeName}</strong>. Please log in to Simple HR to review and approve or decline the request.
+        </p>
+
+        <div style="text-align: center;">
+          <a href="${data.loginUrl}" class="button">Login to Simple HR</a>
+        </div>
+
+        <div class="footer">
+          <p>If the button above does not work, copy and paste this URL into your browser:</p>
+          <p class="url">${data.loginUrl}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+`,
+
+  hr: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .highlight { color: #b91c1c; font-weight: bold; }
+          .button {
+          display: inline-block;
+          background: #0f766e;
+          color: white;
+          padding: 12px 24px;
+          text-decoration: none;
+          border-radius: 5px;
+          margin: 20px 0;
+        }
+        a.button { color: white; }
+        .footer { 
+          margin-top: 30px; 
+          padding-top: 20px; 
+          border-top: 1px solid #eee; 
+          color: #666; 
+          font-size: 14px; 
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>HR Leave Approval Notification</h1>
+        </div>
+
+        <p>Hello <strong>${data.name}</strong>,</p>
+        
+        <p>
+          There is a pending leave request that requires 
+          your action for <strong>${data.employeeName}</strong>. Please log in to Simple HR to review and approve or decline the request.
+        </p>
+
+        <div style="text-align: center;">
+          <a href="${data.loginUrl}" class="button">Login to Simple HR</a>
+        </div>
+
+        <div class="footer">
+          <p>If the button above does not work, copy and paste this URL into your browser:</p>
+          <p class="url">${data.loginUrl}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+`,
+
+  leaveApprovedAll: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .footer { 
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          color: #666;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Leave Request Approved</h1>
+        </div>
+
+        <p>Hello ${data.employeeName} and ${data.reliefOfficerName},</p>
+
+        <p>
+          This is to inform you that the leave request for 
+          <strong>${data.employeeName}</strong>, covering the period from
+          <strong>${data.startDate}</strong> to 
+          <strong>${data.endDate}</strong>, has been 
+          <span style="color: #16a34a; font-weight: bold;">approved</span>.
+        </p>
+
+        <p>
+          ${data.reliefOfficerName}, please take note that you will be the assigned 
+          relief officer during this period.
+        </p>
+
+        <div class="footer">
+          <p>This is an automated message from Simple HR.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+`
+
 };

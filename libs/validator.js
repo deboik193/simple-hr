@@ -285,6 +285,10 @@ export const authValidation = {
     handoverNotes: Joi.string().optional(),
     urgentContact: Joi.string().optional(),
 
+  }),
+
+  approvalHistory: Joi.object({
+    notes: Joi.string().allow('').optional()
   })
 };
 

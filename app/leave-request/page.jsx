@@ -1,11 +1,12 @@
 // app/leave-requests/page.js
 'use client';
 
-import { getDepartment } from '../../api';
-import ActionModal from '../../components/actionModal';
+import { approveLeaveByHR, approveLeaveByManager, approveLeaveByReliefOfficer, declineLeaveByManager, declineLeaveByReliefOfficer, fetchLeave, getDepartment } from '../../api';
+import ActionModal from '../../components/ActionModal';
 import Button from '@/components/Button';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
 import NewLeaveRequestModal from '../../components/NewLeaveRequestModal';
+import Loader from '@/components/Loader'; // Import Loader component
 import { LEAVETYPE, STATUS } from '@/constant/constant';
 import { useState, useEffect } from 'react';
 import {
@@ -20,215 +21,8 @@ import {
   FiChevronRight,
   FiDownload
 } from 'react-icons/fi';
-
-// Mock data based on your LeaveRequest schema
-const MOCK_LEAVE_REQUESTS = [
-  {
-    _id: '1',
-    employeeId: {
-      _id: '1',
-      name: 'John Smith',
-      employeeId: 'EMP001',
-      department: 'Engineering',
-      position: 'Senior Software Engineer'
-    },
-    leaveType: 'annual',
-    startDate: '2024-02-15',
-    endDate: '2024-02-20',
-    totalDays: 5,
-    reason: 'Family vacation and personal time off',
-    status: 'pending-manager',
-    reliefOfficerId: {
-      _id: '3',
-      name: 'Mike Chen',
-      employeeId: 'EMP003'
-    },
-    reliefStatus: 'accepted',
-    reliefNotes: 'Happy to cover for John during his vacation',
-    approvalHistory: [
-      {
-        approvedBy: {
-          _id: '3',
-          name: 'Mike Chen'
-        },
-        role: 'relief',
-        action: 'accepted-relief',
-        notes: 'Confirmed I can handle the workload',
-        timestamp: '2024-01-10T10:30:00Z'
-      }
-    ],
-    handoverNotes: 'All ongoing projects documented in shared drive. Key contacts listed in project files.',
-    urgentContact: '+1 (555) 123-4567',
-    createdAt: '2024-01-08T09:15:00Z',
-    updatedAt: '2024-01-10T10:30:00Z'
-  },
-  {
-    _id: '2',
-    employeeId: {
-      _id: '2',
-      name: 'Sarah Johnson',
-      employeeId: 'EMP002',
-      department: 'Marketing',
-      position: 'Marketing Manager'
-    },
-    leaveType: 'sick',
-    startDate: '2024-01-10',
-    endDate: '2024-01-12',
-    totalDays: 3,
-    reason: 'Medical appointment and recovery',
-    status: 'approved',
-    reliefOfficerId: {
-      _id: '4',
-      name: 'David Wilson',
-      employeeId: 'EMP005'
-    },
-    reliefStatus: 'accepted',
-    reliefNotes: 'Covering Sarah\'s campaigns',
-    approvalHistory: [
-      {
-        approvedBy: {
-          _id: '4',
-          name: 'Jessica Williams'
-        },
-        role: 'manager',
-        action: 'approved',
-        notes: 'Medical leave approved',
-        timestamp: '2024-01-08T14:20:00Z'
-      },
-      {
-        approvedBy: {
-          _id: '5',
-          name: 'HR Department'
-        },
-        role: 'hr',
-        action: 'approved',
-        notes: 'Documentation verified',
-        timestamp: '2024-01-08T16:45:00Z'
-      }
-    ],
-    handoverNotes: 'Campaign schedules shared with David',
-    urgentContact: '+1 (555) 123-4568',
-    createdAt: '2024-01-07T11:00:00Z',
-    updatedAt: '2024-01-08T16:45:00Z'
-  },
-  {
-    _id: '3',
-    employeeId: {
-      _id: '3',
-      name: 'Mike Chen',
-      employeeId: 'EMP003',
-      department: 'Engineering',
-      position: 'Tech Lead'
-    },
-    leaveType: 'paternity',
-    startDate: '2024-03-01',
-    endDate: '2024-04-01',
-    totalDays: 31,
-    reason: 'Paternity leave for newborn child',
-    status: 'pending-hr',
-    reliefOfficerId: {
-      _id: '1',
-      name: 'John Smith',
-      employeeId: 'EMP001'
-    },
-    reliefStatus: 'pending',
-    reliefNotes: '',
-    approvalHistory: [
-      {
-        approvedBy: {
-          _id: '4',
-          name: 'Jessica Williams'
-        },
-        role: 'manager',
-        action: 'approved',
-        notes: 'Congratulations! Team coverage arranged',
-        timestamp: '2024-01-12T09:15:00Z'
-      }
-    ],
-    handoverNotes: 'Tech lead responsibilities delegated to senior team members',
-    urgentContact: '+1 (555) 123-4569',
-    createdAt: '2024-01-11T08:30:00Z',
-    updatedAt: '2024-01-12T09:15:00Z'
-  },
-  {
-    _id: '4',
-    employeeId: {
-      _id: '5',
-      name: 'Emily Davis',
-      employeeId: 'EMP006',
-      department: 'Sales',
-      position: 'Sales Executive'
-    },
-    leaveType: 'emergency',
-    startDate: '2024-01-09',
-    endDate: '2024-01-09',
-    totalDays: 1,
-    reason: 'Family emergency',
-    status: 'approved',
-    reliefOfficerId: {
-      _id: '6',
-      name: 'Robert Brown',
-      employeeId: 'EMP007'
-    },
-    reliefStatus: 'accepted',
-    reliefNotes: 'Covering urgent client calls',
-    approvalHistory: [
-      {
-        approvedBy: {
-          _id: '2',
-          name: 'Sarah Johnson'
-        },
-        role: 'manager',
-        action: 'approved',
-        notes: 'Emergency leave granted',
-        timestamp: '2024-01-09T08:00:00Z'
-      }
-    ],
-    handoverNotes: 'Client meeting notes shared with Robert',
-    urgentContact: '+1 (555) 123-4570',
-    createdAt: '2024-01-08T19:30:00Z',
-    updatedAt: '2024-01-09T08:00:00Z'
-  },
-  {
-    _id: '5',
-    employeeId: {
-      _id: '7',
-      name: 'Lisa Wang',
-      employeeId: 'EMP008',
-      department: 'Engineering',
-      position: 'Frontend Developer'
-    },
-    leaveType: 'personal',
-    startDate: '2024-02-01',
-    endDate: '2024-02-02',
-    totalDays: 2,
-    reason: 'Personal matters',
-    status: 'rejected',
-    reliefOfficerId: {
-      _id: '8',
-      name: 'Alex Turner',
-      employeeId: 'EMP009'
-    },
-    reliefStatus: 'declined',
-    reliefNotes: 'Unable to cover due to own project deadlines',
-    approvalHistory: [
-      {
-        approvedBy: {
-          _id: '3',
-          name: 'Mike Chen'
-        },
-        role: 'manager',
-        action: 'rejected',
-        notes: 'No available coverage during critical project phase',
-        timestamp: '2024-01-15T11:20:00Z'
-      }
-    ],
-    handoverNotes: '',
-    urgentContact: '+1 (555) 123-4571',
-    createdAt: '2024-01-14T13:45:00Z',
-    updatedAt: '2024-01-15T11:20:00Z'
-  }
-];
+import { useToast } from '@/context/toastContext';
+import { jwtDecode } from 'jwt-decode';
 
 export default function LeaveRequests() {
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -249,27 +43,48 @@ export default function LeaveRequests() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
   const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [actionLoading, setActionLoading] = useState(false); // Add action loading state
+  const [userRole, setUserRole] = useState(''); // This should come from your auth context
+  const [currentUserId, setCurrentUserId] = useState(''); // This should come from your auth context
+
+  const { addToast } = useToast();
 
   const getDepartments = async () => {
     const fetchDept = await getDepartment();
     setDepartments(fetchDept.data);
   }
 
+  const getLeaveRequest = async () => {
+    setLoading(true); // Start loading
+    try {
+      const getLeave = await fetchLeave()
+      setLeaveRequests(getLeave.data);
+      setFilteredRequests(getLeave.data);
+    } catch (error) {
+      addToast(`Error fetching leave requests.`, 'error');
+    } finally {
+      setLoading(false); // End loading
+    }
+  }
+
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const decoded = token ? jwtDecode(token) : undefined;
+
+    setUserRole(decoded?.role);
+    setCurrentUserId(decoded?.id);
     getDepartments();
-    // Load mock data
-    setLeaveRequests(MOCK_LEAVE_REQUESTS);
-    setFilteredRequests(MOCK_LEAVE_REQUESTS);
+    getLeaveRequest()
   }, []);
 
   // Filter leave requests
   useEffect(() => {
     let filtered = leaveRequests;
-
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(request =>
-        request.employeeId.name.toLowerCase().includes(searchLower) ||
+        request.employeeId.fullName.toLowerCase().includes(searchLower) ||
         request.employeeId.employeeId.toLowerCase().includes(searchLower) ||
         request.reason.toLowerCase().includes(searchLower)
       );
@@ -284,24 +99,22 @@ export default function LeaveRequests() {
     }
 
     if (filters.department !== 'all') {
-      filtered = filtered.filter(request => request.employeeId.department === filters.department);
+      filtered = filtered.filter(request => request.employeeId.department.name.toLowerCase() === filters.department.toLowerCase());
     }
 
     setFilteredRequests(filtered);
     setCurrentPage(1);
   }, [filters, leaveRequests]);
 
-  const handleNewRequest = async (newRequest) => {
-// console.log(newRequest)
-    setLeaveRequests(prev => [newRequest, ...prev]);
-    // Show success message (you could use a toast notification here)
-    alert('Leave request submitted successfully! It is now pending relief officer acceptance.');
+  const handleNewRequest = async () => {
+    setLoading(true); // Show loader when refreshing data
+    getLeaveRequest();
   };
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentRequests = filteredRequests.slice(indexOfFirstItem, indexOfLastItem);
+  const currentRequests = filteredRequests?.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
 
   const handleFilterChange = (key, value) => {
@@ -352,6 +165,7 @@ export default function LeaveRequests() {
   };
 
   const getReliefStatusBadge = (status) => {
+
     const statusConfig = {
       'pending': { color: 'bg-yellow-100 text-yellow-800', label: 'Pending' },
       'accepted': { color: 'bg-green-100 text-green-800', label: 'Accepted' },
@@ -379,44 +193,85 @@ export default function LeaveRequests() {
     setShowActionModal(true);
   };
 
-  const submitAction = () => {
-    if (!selectedRequest || !actionType) return;
+  const submitAction = async () => {
 
-    // Update the leave request status
-    const updatedRequests = leaveRequests.map(request => {
-      if (request._id === selectedRequest._id) {
-        const updatedRequest = {
-          ...request,
-          status: actionType === 'approve' ? 'approved' :
-            actionType === 'reject' ? 'rejected' : request.status,
-          updatedAt: new Date().toISOString(),
-          approvalHistory: [
-            ...request.approvalHistory,
-            {
-              approvedBy: { _id: 'current-user', name: 'Current User' },
-              role: 'manager',
-              action: actionType === 'approve' ? 'approved' : 'rejected',
-              notes: actionNotes,
-              timestamp: new Date().toISOString()
-            }
-          ]
-        };
-        return updatedRequest;
+    setActionLoading(true); // Start action loading
+
+    try {
+      if (actionType === 'reject') {
+        if (selectedRequest.status === "pending-relief") {
+          const res = await declineLeaveByReliefOfficer(actionNotes, selectedRequest._id)
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
+        }
+
+        if (selectedRequest.status === "pending-manager") {
+          const res = await declineLeaveByManager(actionNotes, selectedRequest._id)
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
+        }
+
+        if (selectedRequest.status === "pending-hr") {
+
+        }
+        setActionLoading(true); // Start action loading
+        getLeaveRequest()
       }
-      return request;
-    });
 
-    setLeaveRequests(updatedRequests);
-    setShowActionModal(false);
-    setSelectedRequest(null);
-    setActionType('');
-    setActionNotes('');
+      if (actionType === 'approve') {
+
+        if (selectedRequest.status === "pending-relief") {
+          const res = await approveLeaveByReliefOfficer(actionNotes, selectedRequest._id);
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
+        }
+
+        if (selectedRequest.status === "pending-manager") {
+          const res = await approveLeaveByManager(actionNotes, selectedRequest._id);
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
+        }
+
+        if (selectedRequest.status === "pending-hr") {
+          const res = await approveLeaveByHR(actionNotes, selectedRequest._id);
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
+        }
+
+        setActionLoading(true); // Start action loading
+        getLeaveRequest()
+      }
+
+    } catch (error) {
+      addToast('Error updating leave request' + error, 'error')
+    } finally {
+      setActionLoading(false); // End action loading
+      setShowActionModal(false);
+      setSelectedRequest(null);
+      setActionType('');
+      setActionNotes('');
+    }
   };
 
   const handleExport = () => {
     // Mock export functionality
     const csvContent = filteredRequests.map(request =>
-      `${request.employeeId.name},${request.leaveType},${request.startDate},${request.endDate},${request.status}`
+      `${request.employeeId.fullName},${request.leaveType},${request.startDate},${request.endDate},${request.status}`
     ).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -431,13 +286,26 @@ export default function LeaveRequests() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const canTakeAction = (request) => {
-    const userRole = 'manager'; // This would come from auth context
-    return (
-      (userRole === 'manager' && request.status === 'pending-manager') ||
-      (userRole === 'hr' && request.status === 'pending-hr') ||
-      (userRole === 'admin' && ['pending-manager', 'pending-hr'].includes(request.status))
-    );
+
+    const userRoles = {
+      'relief-officer': request.status === 'pending-relief' &&
+        request.reliefOfficerId._id === currentUserId, // Add currentUserId from auth
+      'manager': request.status === 'pending-manager' &&
+        request.employeeId.managerId === currentUserId,
+      'hr': request.status === 'pending-hr',
+    };
+
+    return userRoles[userRole] || false;
   };
+
+  // Show loader while data is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -543,13 +411,13 @@ export default function LeaveRequests() {
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center mr-3">
                         <span className="text-sm font-medium text-teal-600">
-                          {request.employeeId.name.split(' ').map(n => n[0]).join('')}
+                          {request?.employeeId?.fullName.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-gray-900">{request.employeeId.name}</div>
+                        <div className="font-medium text-gray-900 capitalize">{request.employeeId.fullName}</div>
                         <div className="text-sm text-gray-500">{request.employeeId.position}</div>
-                        <div className="text-xs text-gray-400">{request.employeeId.employeeId} • {request.employeeId.department}</div>
+                        <div className="text-xs text-gray-400">{request.employeeId.employeeId} • {request.employeeId.department.name}</div>
                         <div className="mt-1">
                           {getLeaveTypeBadge(request.leaveType)}
                         </div>
@@ -568,8 +436,8 @@ export default function LeaveRequests() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {request.reliefOfficerId.name}
+                    <div className="text-sm font-medium text-gray-900 capitalize">
+                      {request.reliefOfficerId.fullName}
                     </div>
                     <div className="text-sm text-gray-500">
                       {request.reliefOfficerId.employeeId}
@@ -592,7 +460,7 @@ export default function LeaveRequests() {
                         <FiEye size={16} />
                       </button>
 
-                      {canTakeAction(request) && (
+                      {request?.status.includes('pending') && request.reliefStatus !== 'declined' &&
                         <>
                           <button
                             onClick={() => handleAction(request, 'approve')}
@@ -609,7 +477,7 @@ export default function LeaveRequests() {
                             <FiXCircle size={16} />
                           </button>
                         </>
-                      )}
+                      }
                     </div>
                   </td>
                 </tr>
@@ -696,10 +564,11 @@ export default function LeaveRequests() {
             setActionType('');
             setActionNotes('');
           }}
+          loading={actionLoading} // Pass loading state to ActionModal
         />
       )}
 
-      {/* // Add this modal to the JSX return section */}
+      {/* New Request Modal */}
       {showNewRequestModal && (
         <NewLeaveRequestModal
           onSave={handleNewRequest}
