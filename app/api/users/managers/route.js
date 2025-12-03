@@ -12,7 +12,7 @@ export const GET = withErrorHandler(async (req) => {
   if (errors) return errors;
   if (!user) throw new AppError('Unauthorized', 401);
 
-  const userData = await User.find({ role: 'manager', isActive: true }).select('fullName email position role');
+  const userData = await User.find({  isActive: true }).select('fullName email position role');
 
   return ApiResponse.success(userData, '');
 });

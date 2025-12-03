@@ -250,7 +250,7 @@ export const authValidation = {
     restrictions: Joi.object({
       blackoutDates: Joi.array().items(Joi.date()).default([]),
       minNoticeDays: Joi.number().min(0).default(0),
-      maxConsecutiveDays: Joi.number().min(1).default(14),
+      maxConsecutiveDays: Joi.number().min(0).default(0),
       allowHalfDays: Joi.boolean().default(false)
     }).default({}),
     isActive: Joi.boolean().optional(),
