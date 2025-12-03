@@ -65,7 +65,7 @@ export const GET = withErrorHandler(async (req) => {
   const leaveRequest = await LeaveRequest.find(filter).sort({ createdAt: -1 })
     .populate([{ path: 'employeeId', populate: { path: 'department' } }, { path: 'reliefOfficerId' }, { path: 'approvalHistory.approvedBy' }]);
 
-    return ApiResponse.success(leaveRequest, 'success');
+  return ApiResponse.success(leaveRequest, 'success');
 });
 
 export const POST = withErrorHandler(async (req) => {

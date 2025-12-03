@@ -122,6 +122,14 @@ export const fetchLeave = async () => {
   return await fetchClient.get('/api/leave-request')
 }
 
+export const declineLeaveByHR = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/hr-decline`, { notes: data });
+}
+
+export const dashboardStats = async () => {
+  return await fetchClient.get('/api/dashboard')
+}
+
 export const uploadCloudinary = async (data) => {
   return await fetchClient.post(`/api/upload`, data)
 }

@@ -80,6 +80,9 @@ export const emailTemplates = {
           border-radius: 5px; 
           margin: 20px 0; 
         }
+        .capitalize { 
+          text-transform: capitalize; 
+        }
         a.button { 
           color: white; 
         }
@@ -103,7 +106,7 @@ export const emailTemplates = {
           <h1>Welcome to Simple HR</h1>
         </div>
         
-        <p>Hello <strong>${data.name}</strong>,</p>
+        <p>Hello <strong class="capitalize">${data.name}</strong>,</p>
         
         <p>Thank you for joining our platform. We're excited to have you on board!</p>
         
@@ -264,7 +267,7 @@ export const emailTemplates = {
           This is to notify you that your leave request for the period of 
           <strong>${data.startDate}</strong> to 
           <strong>${data.endDate}</strong> has been 
-          <span class="highlight">declined</span> by your manager.
+          <span class="highlight">declined</span> by your ${data.role}.
         </p>
         <p><strong>Reason for Decline:</strong></p>
         <p>${data.declineReason}</p>  

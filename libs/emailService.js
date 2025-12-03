@@ -161,17 +161,18 @@ class EmailService {
     )
   }
 
-  async notifyDeclinedLeaveRequestEmployeeOnly(leaveRequest, declineReason) {
+  async notifyDeclinedLeaveRequestEmployeeOnly(leaveRequest, declineReason, role) {
     const { employeeId, startDate, endDate } = leaveRequest;      
     return this.sendEmail(
       employeeId.email,
-      'Leave Request Declined by Manager',
+      'Leave Request Declined by '+ (role || 'Manager'),
       'leaveDeclinedEmployeeOnly',
       {
         employeeName: employeeId.fullName,
         declineReason: declineReason?.notes,
         startDate: startDate.toDateString(),
         endDate: endDate.toDateString(),
+        role: role || 'manager',
       }
     )
   }

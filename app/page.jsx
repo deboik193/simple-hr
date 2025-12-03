@@ -1,9 +1,8 @@
 // app/dashboard/page.js
 'use client';
 
-import { fetchMe } from '@/api';
-import Button from '@/components/Button';
-import { useRouter } from 'next/navigation';
+import { dashboardStats, fetchMe } from '@/api';
+import { set } from 'mongoose';
 import { useState, useEffect } from 'react';
 import {
   FiCalendar,
@@ -20,7 +19,12 @@ export default function Dashboard() {
     pendingRequests: 0,
     approvedThisMonth: 0,
     totalEmployees: 0,
-    onLeaveToday: 0
+    onLeaveToday: 0,
+    birthdayThisWeek: 0,
+    yourLeaveBalance: { balance: 0 },
+    rejectedLeaveRequests: 0,
+    approvedLeaveRequests: 0,
+    totalLeaveRequests: 0,
   });
 
   const [recentRequests, setRecentRequests] = useState([]);
@@ -29,16 +33,33 @@ export default function Dashboard() {
   const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
   const [viewingAll, setViewingAll] = useState(false);
   const [users, setUsers] = useState({})
-  const route = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  const dashboardData = async () => {
+    setLoading(true);
+    // Fetch dashboard data from API
+    try {
+      const res = await dashboardStats();
+      if (res?.data) {
+        setStats({
+          pendingRequests: res.data.pendingLeaveRequests,
+          approvedThisMonth: res.data.approvedLeaveRequests,
+          totalEmployees: res.data.totalEmployees,
+          onLeaveToday: res.data.onLeaveToday.length,
+          birthdayThisWeek: res.data.birthdayThisWeek.length,
+          yourLeaveBalance: res.data.yourLeaveBalance ? res.data.yourLeaveBalance : { balance: 0 },
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     // Mock data - replace with actual API calls
-    setStats({
-      pendingRequests: 12,
-      approvedThisMonth: 45,
-      totalEmployees: 156,
-      onLeaveToday: 8
-    });
+    dashboardData();
 
     setRecentRequests([
       {
@@ -445,7 +466,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Your Leave Balance"
-          value={leaveBalances.currentUser?.totalRemaining || 0}
+          value={`${stats.yourLeaveBalance?.balance || 0} days`}
           icon={FiTrendingUp}
           color="bg-green-500"
           subtitle="Total days remaining"
@@ -458,7 +479,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Birthdays This Week"
-          value={upcomingBirthdays.filter(b => !b.justPassed).length}
+          value={stats.birthdayThisWeek}
           icon={FiGift}
           color="bg-pink-500"
           subtitle="Celebrating soon"

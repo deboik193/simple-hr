@@ -1,7 +1,7 @@
 // app/leave-requests/page.js
 'use client';
 
-import { approveLeaveByHR, approveLeaveByManager, approveLeaveByReliefOfficer, declineLeaveByManager, declineLeaveByReliefOfficer, fetchLeave, getDepartment } from '../../api';
+import { approveLeaveByHR, approveLeaveByManager, approveLeaveByReliefOfficer, declineLeaveByHR, declineLeaveByManager, declineLeaveByReliefOfficer, fetchLeave, getDepartment } from '../../api';
 import ActionModal from '../../components/ActionModal';
 import Button from '@/components/Button';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
@@ -218,7 +218,12 @@ export default function LeaveRequests() {
         }
 
         if (selectedRequest.status === "pending-hr") {
-
+          const res = await declineLeaveByHR(actionNotes, selectedRequest._id)
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
         }
         setActionLoading(true); // Start action loading
         getLeaveRequest()

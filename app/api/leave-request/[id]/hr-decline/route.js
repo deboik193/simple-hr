@@ -4,7 +4,6 @@ import { getAuthUser } from "@/libs/middleware";
 import dbConnect from "@/libs/mongodb";
 import { authValidation } from "@/libs/validator";
 import LeaveRequest from "@/models/LeaveRequest";
-import User from "@/models/User";
 
 export const PATCH = withErrorHandler(async (req, { params }) => {
   await dbConnect();
@@ -20,35 +19,35 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
 
   if (error) throw new AppError('Validation error: ' + error.details[0].message, 400);
 
+  // Verify HR role
+  if (!['hr', 'admin'].includes(user.role)) {
+    throw new AppError('Only HR personnel can perform this action', 403);
+  }
+
   // 1. Find the leave request
   const leaveRequest = await LeaveRequest.findById(id);
+
   if (!leaveRequest) {
     throw new AppError('Leave request not found', 404);
   }
 
-  // 2. Verify the user is the employee's manager
-  const employee = await User.findById(leaveRequest.employeeId);
-  if (!employee.managerId || !employee.managerId.equals(user._id)) {
-    throw new AppError('You are not the manager for this employee', 403);
+  // 2. Verify the request is in correct status
+  if (leaveRequest.status !== 'pending-hr') {
+    throw new AppError('This leave request is not awaiting HR approval', 400);
   }
 
-  // 3. Verify the request is in correct status
-  if (leaveRequest.status !== 'pending-manager') {
-    throw new AppError('This leave request is not awaiting manager approval', 400);
-  }
-
-  // 4. Update the leave request status
+  // 3. Update the leave request status
   const updatedRequest = await LeaveRequest.findByIdAndUpdate(
     id,
-    {
+    { 
       status: 'rejected',
       reliefStatus: 'declined',
       $push: {
         approvalHistory: {
           approvedBy: user._id,
-          role: 'manager',
+          role: 'hr',
           action: 'rejected',
-          notes: value.notes || 'manager declined the request',
+          notes: value.notes || 'HR declined the request',
           timestamp: new Date()
         }
       }
@@ -57,8 +56,7 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
   ).populate('employeeId', 'fullName email employeeId')
     .populate('reliefOfficerId', 'fullName email');
 
-  // 5. Notify the employee
-  await emailService.notifyDeclinedLeaveRequestEmployeeOnly(updatedRequest, value);
-
+  // 4. Notify the employee
+  await emailService.notifyDeclinedLeaveRequestEmployeeOnly(updatedRequest, value, 'HR'); 
   return ApiResponse.success(updatedRequest, 'Leave request declined successfully');
 })

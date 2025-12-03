@@ -26,6 +26,7 @@ const leaveBalanceSchema = new mongoose.Schema({
     required: true
   },
   lastAccruedMonth: Number,
+  lastUpdated: Date,
 }, {
   timestamps: true
 });
