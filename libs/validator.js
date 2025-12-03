@@ -125,13 +125,13 @@ export const authValidation = {
     fullName: commonSchemas.name.required(),
     email: commonSchemas.email.required(),
     personalInfo: {
-      dateOfBirth: commonSchemas.dateOfBirth.optional(),
-      phoneNumber: commonSchemas.phone.optional(),
+      dateOfBirth: commonSchemas.dateOfBirth.allow('').optional(),
+      phoneNumber: commonSchemas.phone.allow('').optional(),
       emergencyContact: {
-        phone: commonSchemas.phone.optional(),
-        name: commonSchemas.name.optional(),
+        phone: commonSchemas.phone.allow('').optional(),
+        name: commonSchemas.name.allow('').optional(),
         relationship: Joi.string()
-          .trim()
+          .trim().allow('')
           .optional()
       }
     },
@@ -161,7 +161,7 @@ export const authValidation = {
       .messages({
         'any.only': 'Employment type must be one of: full-time, part-time, contract'
       }),
-    joinDate: commonSchemas.joinDate.required(),
+    joinDate: commonSchemas.joinDate.allow('').optional(),
     branch: Joi.string()
       .required()
       .messages({
