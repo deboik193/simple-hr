@@ -77,8 +77,13 @@ export default function Login() {
 
         localStorage.setItem('authToken', res?.data.token);
 
-        // Redirect to dashboard
-        window.location.href = '/';
+        const savedNav = localStorage.getItem('activeNav');
+        if (savedNav && savedNav !== '/auth/login') {
+          window.location.href = savedNav;
+        } else {
+          // Redirect to dashboard
+          window.location.href = '/';
+        }
       }
     } catch (error) {
       return error

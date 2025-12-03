@@ -3,6 +3,7 @@ import { authValidation } from '@/libs/validator';
 import { ApiResponse, AppError, withErrorHandler } from '@/libs/errorHandler';
 import InitialBalance from '@/models/InitialLeaveBalance';
 import dbConnect from '@/libs/mongodb';
+import { getAuthUser } from '@/libs/middleware';
 
 export const PATCH = withErrorHandler(async (req, { params }) => {
 

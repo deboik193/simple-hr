@@ -41,12 +41,10 @@ export default function Layout({ children }) {
 
   // Load active navigation from localStorage on component mount
   useEffect(() => {
-    const savedNav = localStorage.getItem('activeNav');
+    const savedNav = location.pathname;
     if (savedNav) {
       setActiveNav(savedNav);
     }
-
-
   }, []);
 
   // Save active navigation to localStorage whenever it changes
@@ -64,8 +62,12 @@ export default function Layout({ children }) {
     { name: 'Dashboard', icon: FiBarChart2, link: '/', role: true },
     { name: 'Employees', icon: FiUsers, link: '/employees', role: ['admin', 'hr'].includes(role) },
     { name: 'Leave Requests', icon: FiCalendar, link: '/leave-request', role: true },
-    // { name: 'Time Off', icon: FiClock, link: '/time-off' },
-    // { name: 'Reports', icon: FiFileText, link: '/reports' },
+    // { name: 'Run Payroll', icon: FiDollarSign, link: '/time-off', role: true },
+    // { name: 'Pay Contractors', icon: FiFileText, link: '/time-off', role: true },
+    // { name: 'Time Tracking', icon: FiFileText, link: '/time-off', role: true },
+    // { name: 'Time Off', icon: FiClock, link: '/time-off', role: true },
+    // { name: 'Benefits', icon: FiFileText, link: '/time-off', role: true },
+    // { name: 'Reports', icon: FiFileText, link: '/reports', role: true },
   ];
 
   const bottomNavItems = [
@@ -74,7 +76,7 @@ export default function Layout({ children }) {
   ];
 
   const handleNavClick = (navName, path) => {
-    setActiveNav(navName);
+    setActiveNav(path);
 
     setSidebarOpen(false);
     // You can add navigation logic here if using client-side routing
@@ -159,7 +161,7 @@ export default function Layout({ children }) {
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeNav === item.name;
+              const isActive = activeNav === item.link;
               return (
                 <Link
                   key={item.name}
@@ -182,7 +184,7 @@ export default function Layout({ children }) {
           <nav className="space-y-1">
             {['admin', 'hr'].includes(role) && bottomNavItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeNav === item.name;
+              const isActive = activeNav === item.link;
               return (
                 <Link
                   key={item.name}

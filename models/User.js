@@ -113,4 +113,19 @@ userSchema.pre('save', async function (next) {
   next();
 })
 
+// Add method to check birthday
+userSchema.methods.isBirthdayThisWeek = function () {
+  const now = new Date();
+  const birthDate = new Date(this.personalInfo.dateOfBirth);
+  const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+
+  if (nextBirthday < now) {
+    nextBirthday.setFullYear(now.getFullYear() + 1);
+  }
+
+  const diffTime = nextBirthday - now;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays <= 7; // Notify one week before
+};
+
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);

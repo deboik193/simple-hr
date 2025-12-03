@@ -191,6 +191,19 @@ class EmailService {
     )
   }
 
+  async birthdayNotification(user) {
+    return this.sendEmail(
+      user.email,
+      'Upcoming Birthday Notification',
+      'getBirthdayTemplate',
+      {
+        employeeName: user.fullName,
+        department: user.department,
+        birthdayDate: user.dateOfBirth.toDateString(),
+      }
+    );
+  }
+
   // ... other email methods
 }
 

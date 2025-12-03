@@ -428,6 +428,53 @@ export const emailTemplates = {
       </div>
     </body>
     </html>
-`
+`,
+
+  getBirthdayTemplate: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; }
+        .footer { 
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          color: #666;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎂 Birthday Reminder</h1>
+        </div>
+
+        <p>Hello HR,</p>
+
+        <p>
+          This is a reminder that 
+          <strong>${data.employeeName}</strong> from the 
+          <strong>${data.department}</strong> department has a birthday coming up!
+        </p>
+
+        <p>
+          <strong>Birthday:</strong> ${data.birthdayDate}
+        </p>
+
+        <p>
+          Please consider sending birthday wishes to help make their day special.
+        </p>
+
+        <div class="footer">
+          <p>This is an automated message from Simple HR.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `,
 
 };
