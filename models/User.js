@@ -76,7 +76,6 @@ const userSchema = new mongoose.Schema({
   personalInfo: {
     dateOfBirth: {
       type: Date,
-      required: true
     },
     phoneNumber: String,
     emergencyContact: {

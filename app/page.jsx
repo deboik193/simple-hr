@@ -2,6 +2,7 @@
 'use client';
 
 import { fetchMe } from '@/api';
+import Button from '@/components/Button';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import {

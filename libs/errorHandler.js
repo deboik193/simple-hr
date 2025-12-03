@@ -58,6 +58,7 @@ export class ApiResponse {
 }
 
 export const handleApiError = (error) => {
+  console.log(error)
   console.error('API Error:', {
     message: error?.errors ? error?.errors[0].message : error.message,
     name: error.name,

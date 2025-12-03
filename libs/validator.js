@@ -74,11 +74,7 @@ export const commonSchemas = {
     }),
 
   dateOfBirth: Joi.date()
-    .max('now')
-    .messages({
-      'date.base': 'Please provide a valid date of birth',
-      'date.max': 'Date of birth cannot be in the future'
-    }),
+    .max('now'),
 
   phone: Joi.string()
     .trim()

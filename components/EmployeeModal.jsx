@@ -362,7 +362,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
               {/* Date of Birth */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date of Birth *
+                  Date of Birth
                 </label>
                 <div className="relative">
                   <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
