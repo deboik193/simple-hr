@@ -92,10 +92,6 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
       newErrors.email = 'Email is invalid';
     }
 
-    if (!formData.personalInfo.dateOfBirth) {
-      newErrors['personalInfo.dateOfBirth'] = 'Date of birth is required';
-    }
-
     if (!formData.position.trim()) {
       newErrors.position = 'Position is required';
     }
