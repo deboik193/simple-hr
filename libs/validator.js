@@ -125,14 +125,14 @@ export const authValidation = {
     fullName: commonSchemas.name.required(),
     email: commonSchemas.email.required(),
     personalInfo: {
-      dateOfBirth: commonSchemas.dateOfBirth.required(),
-      phoneNumber: commonSchemas.phone.required(),
+      dateOfBirth: commonSchemas.dateOfBirth.optional(),
+      phoneNumber: commonSchemas.phone.optional(),
       emergencyContact: {
-        phone: commonSchemas.phone.required(),
-        name: commonSchemas.name.required(),
+        phone: commonSchemas.phone.optional(),
+        name: commonSchemas.name.optional(),
         relationship: Joi.string()
           .trim()
-          .required()
+          .optional()
       }
     },
     password: commonSchemas.password.optional(),
