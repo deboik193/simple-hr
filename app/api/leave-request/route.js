@@ -354,8 +354,8 @@ export const POST = withErrorHandler(async (req) => {
   }
 
   // 9. Determine status based on policy requirements
-  let status = 'pending-relief';
-  let reliefStatus = 'pending';
+  let status = 'pending-manager';
+  let reliefStatus = 'approved';
 
   // If policy requires relief officer approval
   if (leavePolicy.approvalWorkflow.requireReliefOfficer) {

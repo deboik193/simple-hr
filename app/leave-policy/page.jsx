@@ -648,15 +648,18 @@ export default function LeavePolicies() {
                             <label key={level} className="flex items-center gap-2">
                               <input
                                 type="checkbox"
+                                disabled={policyForm.approvalWorkflow.requireReliefOfficer === false && (level === 'employee' || level === 'team-lead')}
                                 checked={policyForm.approvalWorkflow.approvalLevels.includes(level)}
                                 onChange={() => toggleApprovalLevel(level)}
                                 className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                               />
+                              {console.log(level)}
                               <span className="text-sm text-gray-700 capitalize">{level}</span>
                             </label>
                           ))}
                         </div>
                       </div>
+                      {console.log(policyForm.approvalWorkflow.requireReliefOfficer)}
                     </div>
                   </div>
 

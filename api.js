@@ -106,6 +106,14 @@ export const approveLeaveByReliefOfficer = async (data, id) => {
   return await fetchClient.patch(`/api/leave-request/${id}/relief-approve`, { notes: data });
 }
 
+export const declineLeaveByTeamLead = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/team-lead-decline`, { notes: data });
+}
+
+export const approveLeaveByTeamLead = async (data, id) => {
+  return await fetchClient.patch(`/api/leave-request/${id}/team-lead-approve`, { notes: data });
+}
+
 export const approveLeaveByManager = async (data, id) => {
   return await fetchClient.patch(`/api/leave-request/${id}/manager-approve`, { notes: data });
 }

@@ -1,7 +1,7 @@
 // app/leave-requests/page.js
 'use client';
 
-import { approveLeaveByHR, approveLeaveByManager, approveLeaveByReliefOfficer, declineLeaveByHR, declineLeaveByManager, declineLeaveByReliefOfficer, fetchLeave, getDepartment } from '../../api';
+import { approveLeaveByHR, approveLeaveByManager, approveLeaveByReliefOfficer, approveLeaveByTeamLead, declineLeaveByHR, declineLeaveByManager, declineLeaveByReliefOfficer, fetchLeave, getDepartment } from '../../api';
 import ActionModal from '../../components/ActionModal';
 import Button from '@/components/Button';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
@@ -208,6 +208,15 @@ export default function LeaveRequests() {
           }
         }
 
+        if (selectedRequest.status === "pending-team-lead") {
+          const res = await declineLeaveByTeamLead(actionNotes, selectedRequest._id)
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
+        }
+
         if (selectedRequest.status === "pending-manager") {
           const res = await declineLeaveByManager(actionNotes, selectedRequest._id)
           if (res?.error) {
@@ -233,6 +242,15 @@ export default function LeaveRequests() {
 
         if (selectedRequest.status === "pending-relief") {
           const res = await approveLeaveByReliefOfficer(actionNotes, selectedRequest._id);
+          if (res?.error) {
+            addToast(res?.error, 'error')
+          } else {
+            addToast(res?.message, 'success')
+          }
+        }
+
+        if (selectedRequest.status === "pending-team-lead") {
+          const res = await approveLeaveByTeamLead(actionNotes, selectedRequest._id);
           if (res?.error) {
             addToast(res?.error, 'error')
           } else {

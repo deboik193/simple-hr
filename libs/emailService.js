@@ -113,7 +113,7 @@ class EmailService {
     );
   }
 
-  async notifyDeclinedLeaveRequest(leaveRequest, declineReason, manager) {
+  async notifyDeclinedLeaveRequest(leaveRequest, declineReason, manager, whois) {
     const { employeeId, reliefOfficerId, startDate, endDate } = leaveRequest;
 
     return this.sendEmail(
@@ -121,6 +121,7 @@ class EmailService {
       'Leave Request Declined by Relief Officer',
       'leaveDeclinedEmployee',
       {
+        who: 'Relief' || whois,
         managerName: manager?.managerId.fullName,
         employeeName: employeeId.fullName,
         reliefOfficerName: reliefOfficerId.fullName,

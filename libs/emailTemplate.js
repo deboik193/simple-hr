@@ -218,7 +218,7 @@ export const emailTemplates = {
           <strong>${data.employeeName}</strong> for the period of 
           <strong>${data.startDate}</strong> to 
           <strong>${data.endDate}</strong> has been 
-          <span class="highlight">declined</span> by the assigned Relief Officer 
+          <span class="highlight">declined</span> by the assigned ${data.who} Officer 
           <strong>${data.reliefOfficerName}</strong>.
         </p>
 
@@ -310,7 +310,7 @@ export const emailTemplates = {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Manager Leave Approval Notification</h1>
+          <h1>Leave Approval Notification</h1>
         </div>
 
         <p>Hello <strong>${data.name}</strong>,</p>

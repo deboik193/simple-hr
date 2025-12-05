@@ -27,13 +27,13 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
   }
 
   // 2. Verify the user is the assigned relief officer
-  if (!leaveRequest.reliefOfficerId.equals(user._id)) {
-    throw new AppError('You are not assigned as the relief officer for this request', 403);
+  if (!leaveRequest.teamLeadId.equals(user._id)) {
+    throw new AppError('You are not assigned as the team lead officer for this request', 403);
   }
 
   // 3. Verify the request is in correct status
-  if (leaveRequest.status !== 'pending-relief') {
-    throw new AppError('This leave request is not awaiting relief officer approval', 400);
+  if (leaveRequest.status !== 'pending-team-lead') {
+    throw new AppError('This leave request is not awaiting team lead officer approval', 400);
   }
 
   // 4. Determine next status based on approval workflow
@@ -43,10 +43,8 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
   // Check if manager approval is required
   const employee = await User.findById(leaveRequest.employeeId).populate('managerId');
 
-  if (employee.managerId && !employee.teamLeadId) {
+  if (employee.managerId) {
     nextStatus = 'pending-manager';
-  } else if (employee.teamLeadId) {
-    nextStatus = 'pending-team-lead';
   } else {
     // If no manager, go to HR or directly to approved
     nextStatus = 'pending-hr'; // or 'approved' based on your workflow
@@ -61,24 +59,18 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
       $push: {
         approvalHistory: {
           approvedBy: user._id,
-          role: 'relief-officer',
+          role: 'team-lead-officer',
           action: 'approved',
-          notes: value.notes || 'Relief officer approved the request',
+          notes: value.notes || 'team lead officer approved the request',
           timestamp: new Date()
         }
       }
     },
     { new: true }
   ).populate('employeeId', 'fullName email employeeId')
-    .populate('reliefOfficerId', 'fullName email')
+    .populate('teamLeadId', 'fullName email')
 
-  const manager = null;
-  
-  if (employee.teamLeadId) {
-    manager = await User.findById(updatedRequest?.employeeId._id).populate('teamLeadId');
-  } else {
-    manager = await User.findById(updatedRequest?.employeeId._id).populate('managerId');
-  }
+  const manager = await User.findById(updatedRequest?.employeeId._id).populate('managerId');
 
   // 6. Notify the employee and manager
   await emailService.notifyManagerApproval(updatedRequest, manager);
