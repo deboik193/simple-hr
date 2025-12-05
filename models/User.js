@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  teamLeadId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   employmentType: {
     type: String,
     enum: EMPLOYEETYPE,
