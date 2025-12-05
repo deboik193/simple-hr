@@ -188,7 +188,7 @@ export default function Layout({ children }) {
               return (
                 <Link
                   key={item.name}
-                  onClick={() => handleNavClick(item.name, item.path)}
+                  onClick={() => handleNavClick(item.name, item.link)}
                   href={item.link}
                   className={`w-full cursor-pointer flex items-center gap-3 p-3 rounded-md text-left transition-colors ${isActive
                     ? 'bg-green-50 text-green-600 font-semibold border-r-2 border-green-600'

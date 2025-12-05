@@ -151,7 +151,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-green-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-green-100 rounded-lg transition-colors cursor-pointer"
           >
             <FiX size={20} className='text-green-600/30' />
           </button>

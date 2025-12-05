@@ -46,7 +46,9 @@ export const POST = withErrorHandler(async (req) => {
   const existingUser = await User.findOne({ email: value.email });
 
   if (existingUser) {
-    throw new AppError('Email already registered', 409);
+    await User.findOneAndUpdate({ email: value.email }, { isActive: true, ...value }, { new: true });
+
+    return ApiResponse.success(existingUser, 'User re-activated successfully');
   }
 
   //  Count total users (or employees)

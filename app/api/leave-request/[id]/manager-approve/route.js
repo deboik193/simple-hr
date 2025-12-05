@@ -47,6 +47,7 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
     id,
     {
       status: nextStatus,
+      reliefStatus: 'approved',
       $push: {
         approvalHistory: {
           approvedBy: user._id,
