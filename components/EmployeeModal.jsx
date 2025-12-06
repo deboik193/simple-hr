@@ -56,16 +56,19 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
 
   useEffect(() => {
     if (employee) {
+      console.log('hello', employee);
       setFormData({
         fullName: employee.fullName,
         email: employee.email,
         role: employee.role,
-        department: employee.department,
+        department: employee.department._id,
         position: employee.position,
         employmentType: employee.employmentType,
         joinDate: employee.joinDate.split('T')[0],
-        branch: employee.branch,
-        levels: employee.levels || 'L1',
+        branch: employee.branch._id,
+        levels: employee.levels,
+        managerId: employee.managerId?._id || '',
+        teamLeadId: employee.teamLeadId?._id || '',
         personalInfo: {
           dateOfBirth: employee.personalInfo?.dateOfBirth?.split('T')[0] || '',
           phoneNumber: employee.personalInfo?.phoneNumber || '',

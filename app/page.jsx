@@ -2,7 +2,8 @@
 'use client';
 
 import { dashboardStats, fetchMe } from '@/api';
-import { set } from 'mongoose';
+import Loader from '@/components/Loader';
+import { jwtDecode } from 'jwt-decode';
 import { useState, useEffect } from 'react';
 import {
   FiCalendar,
@@ -32,8 +33,10 @@ export default function Dashboard() {
   const [leaveBalances, setLeaveBalances] = useState({});
   const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
   const [viewingAll, setViewingAll] = useState(false);
+  const [showAllTeam, setShowAllTeam] = useState(false);
   const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true);
+  const [role, setRoles] = useState('');
 
   const dashboardData = async () => {
     setLoading(true);
@@ -58,10 +61,125 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const decoded = token ? jwtDecode(token) : undefined;
+
+    setRoles(decoded?.role);
+  })
+
+  useEffect(() => {
     // Mock data - replace with actual API calls
     dashboardData();
 
     setRecentRequests([
+      {
+        id: 1,
+        employee: 'John Smith',
+        type: 'Annual',
+        startDate: '2024-01-15',
+        endDate: '2024-01-20',
+        status: 'pending',
+        days: 5
+      },
+      {
+        id: 2,
+        employee: 'Sarah Johnson',
+        type: 'Sick',
+        startDate: '2024-01-10',
+        endDate: '2024-01-12',
+        status: 'approved',
+        days: 3
+      },
+      {
+        id: 3,
+        employee: 'Mike Chen',
+        type: 'Personal',
+        startDate: '2024-01-18',
+        endDate: '2024-01-19',
+        status: 'pending',
+        days: 2
+      },
+      {
+        id: 1,
+        employee: 'John Smith',
+        type: 'Annual',
+        startDate: '2024-01-15',
+        endDate: '2024-01-20',
+        status: 'pending',
+        days: 5
+      },
+      {
+        id: 2,
+        employee: 'Sarah Johnson',
+        type: 'Sick',
+        startDate: '2024-01-10',
+        endDate: '2024-01-12',
+        status: 'approved',
+        days: 3
+      },
+      {
+        id: 3,
+        employee: 'Mike Chen',
+        type: 'Personal',
+        startDate: '2024-01-18',
+        endDate: '2024-01-19',
+        status: 'pending',
+        days: 2
+      },
+      {
+        id: 1,
+        employee: 'John Smith',
+        type: 'Annual',
+        startDate: '2024-01-15',
+        endDate: '2024-01-20',
+        status: 'pending',
+        days: 5
+      },
+      {
+        id: 2,
+        employee: 'Sarah Johnson',
+        type: 'Sick',
+        startDate: '2024-01-10',
+        endDate: '2024-01-12',
+        status: 'approved',
+        days: 3
+      },
+      {
+        id: 3,
+        employee: 'Mike Chen',
+        type: 'Personal',
+        startDate: '2024-01-18',
+        endDate: '2024-01-19',
+        status: 'pending',
+        days: 2
+      },
+      {
+        id: 1,
+        employee: 'John Smith',
+        type: 'Annual',
+        startDate: '2024-01-15',
+        endDate: '2024-01-20',
+        status: 'pending',
+        days: 5
+      },
+      {
+        id: 2,
+        employee: 'Sarah Johnson',
+        type: 'Sick',
+        startDate: '2024-01-10',
+        endDate: '2024-01-12',
+        status: 'approved',
+        days: 3
+      },
+      {
+        id: 3,
+        employee: 'Mike Chen',
+        type: 'Personal',
+        startDate: '2024-01-18',
+        endDate: '2024-01-19',
+        status: 'pending',
+        days: 2
+      },
       {
         id: 1,
         employee: 'John Smith',
@@ -446,6 +564,14 @@ export default function Dashboard() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -487,86 +613,106 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex flex-wrap gap-6 w-full">
         {/* Your Leave Balance Card */}
-        <div className="lg:col-span-1 bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Your Leave Balance</h2>
-            <button
-              onClick={() => setViewingAll(!viewingAll)}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              {viewingAll ? (
-                <>
-                  <FiBriefcase size={16} />
-                  View Yours Only
-                </>
-              ) : (
-                <>
-                  <FiEye size={16} />
-                  View Team
-                </>
-              )}
-            </button>
-          </div>
-
-          {!viewingAll && leaveBalances.currentUser && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg font-semibold text-blue-600">
-                    {leaveBalances.currentUser.employeeName.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{leaveBalances.currentUser.employeeName}</p>
-                  <p className="text-sm text-gray-600">{leaveBalances.currentUser.department} • {leaveBalances.currentUser.employeeId}</p>
-                </div>
+        <div className="grow basis-full md:basis-1/2 lg:basis-1/3 bg-white rounded-lg border border-gray-200 p-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-lg font-semibold text-blue-600">
+                  {leaveBalances.currentUser.employeeName.split(' ').map(n => n[0]).join('')}
+                </span>
               </div>
-
-              <div className="space-y-4">
-                {leaveBalances.currentUser.leaveTypes.map((leave, index) => (
-                  <LeaveBalanceItem
-                    key={index}
-                    type={leave.name}
-                    used={leave.used}
-                    total={leave.total}
-                    remaining={leave.remaining}
-                  />
-                ))}
-              </div>
-
-              <div className="pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700">Total Available</span>
-                  <span className="text-lg font-bold text-gray-900">{leaveBalances.currentUser.totalRemaining} days</span>
-                </div>
+              <div>
+                <p className="font-semibold text-gray-900">{leaveBalances.currentUser.employeeName}</p>
+                <p className="text-sm text-gray-600">{leaveBalances.currentUser.department} • {leaveBalances.currentUser.employeeId}</p>
               </div>
             </div>
-          )}
 
-          {viewingAll && leaveBalances.teamMembers && (
             <div className="space-y-4">
-              <h3 className="text-md font-medium text-gray-900">Team Leave Balances</h3>
+              {leaveBalances.currentUser.leaveTypes.map((leave, index) => (
+                <LeaveBalanceItem
+                  key={index}
+                  type={leave.name}
+                  used={leave.used}
+                  total={leave.total}
+                  remaining={leave.remaining}
+                />
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Total Available</span>
+                <span className="text-lg font-bold text-gray-900">{leaveBalances.currentUser.totalRemaining} days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {['admin', 'manager', 'hr', 'team-lead'].includes(role) &&
+          <div className="grow bg-white rounded-lg border border-gray-200 p-6">
+            {!showAllTeam && (
+              <div className="space-y-4 transition-all">
+
+                <h3 className="text-md font-medium text-gray-900">Team Leave Balances</h3>
+
+                {/* Show only 4 members */}
+                <div className="space-y-3">
+                  {leaveBalances.teamMembers.slice(0, 4).map((member) => (
+                    <TeamMemberCard key={member.id} member={member} />
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between text-sm text-gray-600 pt-3 border-t border-gray-200">
+                  <span>
+                    Showing {Math.min(4, leaveBalances.teamMembers.length)} of {leaveBalances.teamMembers.length}
+                  </span>
+
+                  {leaveBalances.teamMembers.length > 3 && (
+                    <button
+                      className="text-blue-600 hover:text-blue-700"
+                      onClick={() => setShowAllTeam(true)}
+                    >
+                      View All →
+                    </button>
+                  )}
+                </div>
+
+              </div>
+            )}
+          </div>
+        }
+
+        {showAllTeam && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white w-full sm:w-[500px] max-h-[80vh] rounded-2xl p-6 shadow-xl overflow-y-auto animate-[slideUp_0.3s_ease]">
+
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">All Team Members</h2>
+                <button
+                  onClick={() => setShowAllTeam(false)}
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* All team members */}
               <div className="space-y-3">
                 {leaveBalances.teamMembers.map((member) => (
                   <TeamMemberCard key={member.id} member={member} />
                 ))}
               </div>
-              <div className="flex items-center justify-between text-sm text-gray-600 pt-3 border-t border-gray-200">
-                <span>Showing {leaveBalances.teamMembers.length} team members</span>
-                <button className="text-blue-600 hover:text-blue-700">
-                  View All
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Recent Leave Requests & Upcoming Birthdays */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Recent Leave Requests */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            </div>
+          </div>
+        )}
+
+        {/* Recent Leave Requests */}
+        {['admin', 'manager', 'hr'].includes(role) &&
+          <div className="grow bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Recent Leave Requests</h2>
               <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
@@ -574,7 +720,7 @@ export default function Dashboard() {
               </button>
             </div>
             <div className="space-y-4">
-              {recentRequests.map((request) => (
+              {recentRequests.slice(0, 4).map((request) => (
                 <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -608,37 +754,37 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
+        }
 
-          {/* Upcoming Birthdays */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <FiGift className="text-pink-500" />
-                  Upcoming Birthdays This Week
-                </h2>
-                <p className="text-sm text-gray-600">Wish your colleagues a happy birthday</p>
-              </div>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                View All Birthdays
-              </button>
+        {/* Upcoming Birthdays */}
+        <div className="grow bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <FiGift className="text-pink-500" />
+                Upcoming Birthdays This Week
+              </h2>
+              <p className="text-sm text-gray-600">Wish your colleagues a happy birthday</p>
             </div>
-            <div className="space-y-3">
-              {upcomingBirthdays.map((birthday) => (
-                <BirthdayCard key={birthday.id} birthday={birthday} />
-              ))}
-            </div>
-            {upcomingBirthdays.filter(b => b.justPassed).length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-500">
-                  Showing {upcomingBirthdays.filter(b => !b.justPassed).length} upcoming birthdays
-                  {upcomingBirthdays.filter(b => b.justPassed).length > 0 &&
-                    ` and ${upcomingBirthdays.filter(b => b.justPassed).length} recent birthdays`
-                  }
-                </p>
-              </div>
-            )}
+            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              View All Birthdays
+            </button>
           </div>
+          <div className="space-y-3">
+            {upcomingBirthdays.slice(0, 3).map((birthday) => (
+              <BirthdayCard key={birthday.id} birthday={birthday} />
+            ))}
+          </div>
+          {upcomingBirthdays.filter(b => b.justPassed).length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-500">
+                Showing {upcomingBirthdays.filter(b => !b.justPassed).length} upcoming birthdays
+                {upcomingBirthdays.filter(b => b.justPassed).length > 0 &&
+                  ` and ${upcomingBirthdays.filter(b => b.justPassed).length} recent birthdays`
+                }
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

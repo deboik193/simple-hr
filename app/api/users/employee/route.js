@@ -19,9 +19,7 @@ export const GET = withErrorHandler(async (req) => {
   if (errors) return errors;
   if (!user) throw new AppError('Unauthorized', 401);
 
-  const employees = await User.find().populate([{ path: 'department' }, { path: 'branch' }, {
-    path: 'managerId'
-  }]).lean().sort({ createdAt: -1 }).select('-password -resetPasswordToken -resetPasswordExpires');
+  const employees = await User.find().populate([{ path: 'department' }, { path: 'branch' }, { path: 'managerId' }, { path: 'teamLeadId' }]).lean().sort({ createdAt: -1 }).select('-password -resetPasswordToken -resetPasswordExpires');
 
   return ApiResponse.success(employees, '');
 });

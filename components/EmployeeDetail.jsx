@@ -248,15 +248,35 @@ export default function EmployeeDetail({ employee, onClose }) {
               {employee.managerId && (
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Reports To</h3>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-teal-600 uppercase">
-                        {employee.managerId.fullName?.split(' ').map(n => n[0]).join('') || 'M'}
-                      </span>
+                  {employee.teamLeadId && (
+                    <div className="space-y-4">
+                      <p className='text-gray-500'>Team Lead</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-teal-600 uppercase">
+                            {employee.teamLeadId.fullName?.split(' ').map(n => n[0]).join('') || 'M'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 capitalize">{employee.teamLeadId.fullName || 'Team Lead'}</p>
+                          <p className="text-sm text-gray-600 capitalize">{employee.teamLeadId.position || 'Team Lead'}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900 capitalize">{employee.managerId.fullName || 'Manager'}</p>
-                      <p className="text-sm text-gray-600 capitalize">{employee.managerId.position || 'Manager'}</p>
+                  )}
+
+                  <div className="mt-6 space-y-4">
+                    <p className='text-gray-500'>Manager</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-teal-600 uppercase">
+                          {employee.managerId.fullName?.split(' ').map(n => n[0]).join('') || 'M'}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 capitalize">{employee.managerId.fullName || 'Manager'}</p>
+                        <p className="text-sm text-gray-600 capitalize">{employee.managerId.position || 'Manager'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
