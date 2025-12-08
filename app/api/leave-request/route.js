@@ -363,6 +363,16 @@ export const POST = withErrorHandler(async (req) => {
     status = 'pending-relief'; // or 'pending-relief' based on your STATUS enum
   }
 
+  // 10. Validate booking within current year if carry-over not allowed
+  const currentYear = new Date().getFullYear();
+  if (!leavePolicy.carryOver.enabled) {
+    const leaveStartYear = new Date(value.startDate).getFullYear();
+    const leaveEndYear = new Date(value.endDate).getFullYear();
+    if (leaveStartYear !== currentYear || leaveEndYear !== currentYear) {
+      throw new AppError('Leave must be booked within the current year as per the leave policy', 400);
+    }
+  }
+  
   // Create approval history initial entry
   const approvalHistory = [{
     approvedBy: user._id,
