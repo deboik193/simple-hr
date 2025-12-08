@@ -169,7 +169,7 @@ export default function LeaveRequests() {
 
     const statusConfig = {
       'pending': { color: 'bg-yellow-100 text-yellow-800', label: 'Pending' },
-      'accepted': { color: 'bg-green-100 text-green-800', label: 'Accepted' },
+      'approved': { color: 'bg-green-100 text-green-800', label: 'Accepted' },
       'declined': { color: 'bg-red-100 text-red-800', label: 'Declined' },
       'cancelled': { color: 'bg-gray-100 text-gray-800', label: 'Cancelled' }
     };
