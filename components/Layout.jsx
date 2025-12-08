@@ -131,8 +131,8 @@ export default function Layout({ children }) {
           </div>
 
           <div className="hidden sm:flex flex-col">
-            <div className="font-medium text-gray-700 text-sm lg:text-base capitalize">{users.fullName}</div>
-            <div className="text-xs text-gray-400 capitalize">{users.role}</div>
+            <div className="font-medium text-gray-700 text-sm lg:text-base capitalize">{users?.fullName}</div>
+            <div className="text-xs text-gray-400 capitalize">{users?.role}</div>
           </div>
 
           {/* User Avatar for mobile */}

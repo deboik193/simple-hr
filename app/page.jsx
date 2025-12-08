@@ -99,114 +99,114 @@ export default function Dashboard() {
         status: 'pending',
         days: 2
       },
-      {
-        id: 1,
-        employee: 'John Smith',
-        type: 'Annual',
-        startDate: '2024-01-15',
-        endDate: '2024-01-20',
-        status: 'pending',
-        days: 5
-      },
-      {
-        id: 2,
-        employee: 'Sarah Johnson',
-        type: 'Sick',
-        startDate: '2024-01-10',
-        endDate: '2024-01-12',
-        status: 'approved',
-        days: 3
-      },
-      {
-        id: 3,
-        employee: 'Mike Chen',
-        type: 'Personal',
-        startDate: '2024-01-18',
-        endDate: '2024-01-19',
-        status: 'pending',
-        days: 2
-      },
-      {
-        id: 1,
-        employee: 'John Smith',
-        type: 'Annual',
-        startDate: '2024-01-15',
-        endDate: '2024-01-20',
-        status: 'pending',
-        days: 5
-      },
-      {
-        id: 2,
-        employee: 'Sarah Johnson',
-        type: 'Sick',
-        startDate: '2024-01-10',
-        endDate: '2024-01-12',
-        status: 'approved',
-        days: 3
-      },
-      {
-        id: 3,
-        employee: 'Mike Chen',
-        type: 'Personal',
-        startDate: '2024-01-18',
-        endDate: '2024-01-19',
-        status: 'pending',
-        days: 2
-      },
-      {
-        id: 1,
-        employee: 'John Smith',
-        type: 'Annual',
-        startDate: '2024-01-15',
-        endDate: '2024-01-20',
-        status: 'pending',
-        days: 5
-      },
-      {
-        id: 2,
-        employee: 'Sarah Johnson',
-        type: 'Sick',
-        startDate: '2024-01-10',
-        endDate: '2024-01-12',
-        status: 'approved',
-        days: 3
-      },
-      {
-        id: 3,
-        employee: 'Mike Chen',
-        type: 'Personal',
-        startDate: '2024-01-18',
-        endDate: '2024-01-19',
-        status: 'pending',
-        days: 2
-      },
-      {
-        id: 1,
-        employee: 'John Smith',
-        type: 'Annual',
-        startDate: '2024-01-15',
-        endDate: '2024-01-20',
-        status: 'pending',
-        days: 5
-      },
-      {
-        id: 2,
-        employee: 'Sarah Johnson',
-        type: 'Sick',
-        startDate: '2024-01-10',
-        endDate: '2024-01-12',
-        status: 'approved',
-        days: 3
-      },
-      {
-        id: 3,
-        employee: 'Mike Chen',
-        type: 'Personal',
-        startDate: '2024-01-18',
-        endDate: '2024-01-19',
-        status: 'pending',
-        days: 2
-      }
+      // {
+      //   id: 1,
+      //   employee: 'John Smith',
+      //   type: 'Annual',
+      //   startDate: '2024-01-15',
+      //   endDate: '2024-01-20',
+      //   status: 'pending',
+      //   days: 5
+      // },
+      // {
+      //   id: 2,
+      //   employee: 'Sarah Johnson',
+      //   type: 'Sick',
+      //   startDate: '2024-01-10',
+      //   endDate: '2024-01-12',
+      //   status: 'approved',
+      //   days: 3
+      // },
+      // {
+      //   id: 3,
+      //   employee: 'Mike Chen',
+      //   type: 'Personal',
+      //   startDate: '2024-01-18',
+      //   endDate: '2024-01-19',
+      //   status: 'pending',
+      //   days: 2
+      // },
+      // {
+      //   id: 1,
+      //   employee: 'John Smith',
+      //   type: 'Annual',
+      //   startDate: '2024-01-15',
+      //   endDate: '2024-01-20',
+      //   status: 'pending',
+      //   days: 5
+      // },
+      // {
+      //   id: 2,
+      //   employee: 'Sarah Johnson',
+      //   type: 'Sick',
+      //   startDate: '2024-01-10',
+      //   endDate: '2024-01-12',
+      //   status: 'approved',
+      //   days: 3
+      // },
+      // {
+      //   id: 3,
+      //   employee: 'Mike Chen',
+      //   type: 'Personal',
+      //   startDate: '2024-01-18',
+      //   endDate: '2024-01-19',
+      //   status: 'pending',
+      //   days: 2
+      // },
+      // {
+      //   id: 1,
+      //   employee: 'John Smith',
+      //   type: 'Annual',
+      //   startDate: '2024-01-15',
+      //   endDate: '2024-01-20',
+      //   status: 'pending',
+      //   days: 5
+      // },
+      // {
+      //   id: 2,
+      //   employee: 'Sarah Johnson',
+      //   type: 'Sick',
+      //   startDate: '2024-01-10',
+      //   endDate: '2024-01-12',
+      //   status: 'approved',
+      //   days: 3
+      // },
+      // {
+      //   id: 3,
+      //   employee: 'Mike Chen',
+      //   type: 'Personal',
+      //   startDate: '2024-01-18',
+      //   endDate: '2024-01-19',
+      //   status: 'pending',
+      //   days: 2
+      // },
+      // {
+      //   id: 1,
+      //   employee: 'John Smith',
+      //   type: 'Annual',
+      //   startDate: '2024-01-15',
+      //   endDate: '2024-01-20',
+      //   status: 'pending',
+      //   days: 5
+      // },
+      // {
+      //   id: 2,
+      //   employee: 'Sarah Johnson',
+      //   type: 'Sick',
+      //   startDate: '2024-01-10',
+      //   endDate: '2024-01-12',
+      //   status: 'approved',
+      //   days: 3
+      // },
+      // {
+      //   id: 3,
+      //   employee: 'Mike Chen',
+      //   type: 'Personal',
+      //   startDate: '2024-01-18',
+      //   endDate: '2024-01-19',
+      //   status: 'pending',
+      //   days: 2
+      // }
     ]);
 
     setUpcomingLeaves([

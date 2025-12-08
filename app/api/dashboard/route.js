@@ -43,7 +43,7 @@ export const GET = withErrorHandler(async (req) => {
       LeaveRequest.countDocuments({ status: 'rejected' }),
 
       // 6. User's leave balance
-      LeaveBalance.findOne({ userId: user._id }),
+      LeaveBalance.findOne({ userId: user._id, leaveType: 'annual' }).lean(),
 
       // 7. User's leaves today
       LeaveRequest.find({

@@ -130,8 +130,8 @@ export default function Employees() {
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentEmployees = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const currentEmployees = filteredEmployees?.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredEmployees?.length / itemsPerPage);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -279,7 +279,7 @@ export default function Employees() {
               className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="all">All Departments</option>
-              {departments.map((dept) => (
+              {departments?.map((dept) => (
                 <option key={dept._id} value={dept.name}>{dept.name}</option>
               ))}
             </select>
@@ -329,7 +329,7 @@ export default function Employees() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentEmployees.map((employee) => (
+              {currentEmployees?.map((employee) => (
                 <tr key={employee._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     {/* Employee info with new fields */}
@@ -402,7 +402,7 @@ export default function Employees() {
         </div>
 
         {/* Empty State */}
-        {filteredEmployees.length === 0 && (
+        {filteredEmployees?.length === 0 && (
           <div className="text-center py-12">
             <FiUser className="mx-auto text-gray-400" size={48} />
             <h3 className="mt-4 text-lg font-medium text-gray-900">No employees found</h3>
@@ -412,14 +412,14 @@ export default function Employees() {
       </div>
 
       {/* Pagination */}
-      {filteredEmployees.length > 0 && (
+      {filteredEmployees?.length > 0 && (
         <div className="flex items-center justify-between bg-white px-6 py-3 border-t border-gray-200">
           <div className="text-sm text-gray-700">
             Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
             <span className="font-medium">
-              {Math.min(indexOfLastItem, filteredEmployees.length)}
+              {Math.min(indexOfLastItem, filteredEmployees?.length)}
             </span> of{' '}
-            <span className="font-medium">{filteredEmployees.length}</span> results
+            <span className="font-medium">{filteredEmployees?.length}</span> results
           </div>
           <div className="flex gap-1">
             <Button

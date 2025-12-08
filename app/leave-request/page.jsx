@@ -115,7 +115,7 @@ export default function LeaveRequests() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentRequests = filteredRequests?.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredRequests?.length / itemsPerPage);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -293,7 +293,7 @@ export default function LeaveRequests() {
 
   const handleExport = () => {
     // Mock export functionality
-    const csvContent = filteredRequests.map(request =>
+    const csvContent = filteredRequests?.map(request =>
       `${request.employeeId.fullName},${request.leaveType},${request.startDate},${request.endDate},${request.status}`
     ).join('\n');
 
@@ -394,7 +394,7 @@ export default function LeaveRequests() {
               className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="all">All Departments</option>
-              {departments.map((item) => (
+              {departments?.map((item) => (
                 <option key={item?._id} className='capitalize' value={item?.name}>{item?.name}</option>
               ))}
             </select>
@@ -405,7 +405,7 @@ export default function LeaveRequests() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {
-          [{ title: 'Total Requests', stats: filteredRequests.length }, { title: 'Pending Approval', stats: filteredRequests.filter(r => r.status?.startsWith('pending')).length }, { title: 'Approved', stats: filteredRequests.filter(r => r.status === 'approved').length }, { title: 'Rejected', stats: filteredRequests.filter(r => r.status === 'rejected').length },].map((stat) => (
+          [{ title: 'Total Requests', stats: filteredRequests?.length }, { title: 'Pending Approval', stats: filteredRequests?.filter(r => r.status?.startsWith('pending')).length }, { title: 'Approved', stats: filteredRequests?.filter(r => r.status === 'approved').length }, { title: 'Rejected', stats: filteredRequests?.filter(r => r.status === 'rejected').length },].map((stat) => (
             <div key={stat.title} className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-2xl font-bold text-gray-900">{stat.stats}</div>
               <div className="text-sm text-gray-600">{stat.title}</div>
@@ -428,7 +428,7 @@ export default function LeaveRequests() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentRequests.map((request) => (
+              {currentRequests?.map((request) => (
                 <tr key={request._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center">
@@ -510,7 +510,7 @@ export default function LeaveRequests() {
         </div>
 
         {/* Empty State */}
-        {filteredRequests.length === 0 && (
+        {filteredRequests?.length === 0 && (
           <div className="text-center py-12">
             <FiCalendar className="mx-auto text-gray-400" size={48} />
             <h3 className="mt-4 text-lg font-medium text-gray-900">No leave requests found</h3>
@@ -520,14 +520,14 @@ export default function LeaveRequests() {
       </div>
 
       {/* Pagination */}
-      {filteredRequests.length > 0 && (
+      {filteredRequests?.length > 0 && (
         <div className="flex items-center justify-between bg-white px-6 py-3 border-t border-gray-200">
           <div className="text-sm text-gray-700">
             Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
             <span className="font-medium">
-              {Math.min(indexOfLastItem, filteredRequests.length)}
+              {Math.min(indexOfLastItem, filteredRequests?.length)}
             </span> of{' '}
-            <span className="font-medium">{filteredRequests.length}</span> results
+            <span className="font-medium">{filteredRequests?.length}</span> results
           </div>
           <div className="flex gap-1">
             <Button
