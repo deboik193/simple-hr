@@ -355,18 +355,15 @@ export const POST = withErrorHandler(async (req) => {
   }
 
   // 8. Check if relief officer is available during the requested period
+  console.log('Relief Officer Busy Check:', value.reliefOfficerId);
   const reliefOfficerBusy = await LeaveRequest.findOne({
     $or: [
       { employeeId: value.reliefOfficerId },
       { reliefOfficerId: value.reliefOfficerId }
     ],
     status: { $in: ['pending-relief', 'pending-manager', 'pending-hr', 'approved'] },
-    $or: [
-      {
-        startDate: { $lte: value.endDate },
-        endDate: { $gte: value.startDate }
-      }
-    ]
+    startDate: { $lte: value.endDate },
+    endDate: { $gte: value.startDate }
   });
 
   if (reliefOfficerBusy) {

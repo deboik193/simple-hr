@@ -46,8 +46,8 @@ export default function Dashboard() {
       if (res?.data) {
         setStats({
           pendingRequests: res.data.pendingLeaveRequests,
-          approvedThisMonth: res.data.approvedLeaveRequests,
-          totalEmployees: res.data.totalEmployees,
+          approvedThisMonth: res.data.approvedLeaveRequests, // not in use currently
+          totalEmployees: res.data.totalEmployees, // not in use currently
           onLeaveToday: res.data.onLeaveToday.length,
           birthdayThisWeek: res.data.birthdayThisWeek.length,
           yourLeaveBalance: res.data.yourLeaveBalance ? res.data.yourLeaveBalance : { balance: 0 },
@@ -646,7 +646,7 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-4">
-              {leaveBalances.currentUser.leaveTypes.map((leave, index) => (
+              {leaveBalances.currentUser.leaveTypes.filter(leave => !['emergency', 'compassionate', 'paternity','personal'].includes(leave.name.toLowerCase())).map((leave, index) => (
                 <LeaveBalanceItem
                   key={index}
                   type={leave.name}

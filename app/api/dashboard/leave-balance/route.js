@@ -85,6 +85,8 @@ export const GET = withErrorHandler(async (req) => {
           endDate: { $gte: new Date() }
         }).lean();
 
+        console.log('Member Balances:', teamMemberBalances);
+
         const memberBalances = teamMemberBalances.filter(b =>
           b.userId.toString() === member._id.toString()
         );
