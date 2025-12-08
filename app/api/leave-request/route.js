@@ -66,13 +66,20 @@ export const GET = withErrorHandler(async (req) => {
   // 3️⃣ EMPLOYEE → Own + Relief
   // -----------------------------------------
   else if (user.role === "team-lead") {
-    console.log("Team lead access");
+    // First, find employees in the manager's department
+    const teamLead = await mongoose.model('User').find(
+      { teamLeadId: user.teamLeadId },
+      '_id'
+    );
+
+    const employeeIds = teamLead.map(emp => emp._id);
+
     filter = {
       $or: [
-        { teamLeadId: user._id },
-        // { reliefOfficerId: user._id }
+        { employeeId: { $in: employeeIds } }, // Leave requests from department employees
+        { reliefOfficerId: user._id } // Leave requests where manager is relief officer
       ],
-    };
+    }
   }
 
   const leaveRequest = await LeaveRequest.find(filter).sort({ createdAt: -1 })

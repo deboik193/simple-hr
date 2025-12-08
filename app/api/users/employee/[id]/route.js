@@ -29,7 +29,6 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
     throw new AppError('User does not exist', 404);
   }
   
-  console.log(id, 'updated user');
   //  Add employeeId to user data before saving
   const updatedNewUser = await User.findByIdAndUpdate(id, value, { new: true, runValidators: true });
   
