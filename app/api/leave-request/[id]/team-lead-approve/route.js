@@ -26,9 +26,10 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
     throw new AppError('Leave request not found', 404);
   }
 
-  // 2. Verify the user is the assigned relief officer
-  if (!leaveRequest.teamLeadId.equals(user._id)) {
-    throw new AppError('You are not assigned as the team lead officer for this request', 403);
+  // 2. Verify the user is the employee's manager
+  const employee = await User.findById(leaveRequest.employeeId);
+  if (!employee.teamLeadId || !employee.teamLeadId.equals(user._id)) {
+    throw new AppError('You are not assigned as team lead officer for this request', 403);
   }
 
   // 3. Verify the request is in correct status
@@ -41,8 +42,6 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
   let nextReliefStatus = 'approved';
 
   // Check if manager approval is required
-  const employee = await User.findById(leaveRequest.employeeId).populate('managerId');
-
   if (employee.managerId) {
     nextStatus = 'pending-manager';
   } else {

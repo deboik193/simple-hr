@@ -607,7 +607,7 @@ export default function Dashboard() {
           color="bg-yellow-500"
         />
         <StatCard
-          title="Your Leave Balance"
+          title="Your Annual Leave Balance"
           value={`${stats.yourLeaveBalance?.balance || 0} days`}
           icon={FiTrendingUp}
           color="bg-green-500"
