@@ -1,7 +1,7 @@
 // app/dashboard/page.js
 'use client';
 
-import { dashboardStats, fetchMe } from '@/api';
+import { dashboardLeaveBalance, dashboardStats, fetchMe } from '@/api';
 import Loader from '@/components/Loader';
 import { jwtDecode } from 'jwt-decode';
 import { useState, useEffect } from 'react';
@@ -30,7 +30,7 @@ export default function Dashboard() {
 
   const [recentRequests, setRecentRequests] = useState([]);
   const [upcomingLeaves, setUpcomingLeaves] = useState([]);
-  const [leaveBalances, setLeaveBalances] = useState({});
+  const [leaveBalances, setLeaveBalances] = useState([]);
   const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
   const [viewingAll, setViewingAll] = useState(false);
   const [showAllTeam, setShowAllTeam] = useState(false);
@@ -60,6 +60,21 @@ export default function Dashboard() {
     }
   }
 
+  const leaveBalanceData = async () => {
+    setLoading(true);
+    // Fetch leave balance data from API
+    try {
+      const res = await dashboardLeaveBalance();
+      if (res?.data) {
+        setLeaveBalances(res.data);
+      }
+    } catch (error) {
+      console.error('Error fetching leave balance data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+  
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     const decoded = token ? jwtDecode(token) : undefined;
@@ -70,6 +85,7 @@ export default function Dashboard() {
   useEffect(() => {
     // Mock data - replace with actual API calls
     dashboardData();
+    leaveBalanceData();
 
     setRecentRequests([
       {
@@ -624,7 +640,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <div>
-                <p className="font-semibold text-gray-900">{leaveBalances.currentUser.employeeName}</p>
+                <p className="font-semibold text-gray-900 capitalize">{leaveBalances.currentUser.employeeName}</p>
                 <p className="text-sm text-gray-600">{leaveBalances.currentUser.department} • {leaveBalances.currentUser.employeeId}</p>
               </div>
             </div>

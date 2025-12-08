@@ -138,6 +138,10 @@ export const dashboardStats = async () => {
   return await fetchClient.get('/api/dashboard')
 }
 
+export const dashboardLeaveBalance = async () => {
+  return await fetchClient.get('/api/dashboard/leave-balance')
+}
+
 export const uploadCloudinary = async (data) => {
   return await fetchClient.post(`/api/upload`, data)
 }
