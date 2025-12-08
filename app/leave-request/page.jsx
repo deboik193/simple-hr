@@ -1,7 +1,7 @@
 // app/leave-requests/page.js
 'use client';
 
-import { approveLeaveByHR, approveLeaveByManager, approveLeaveByReliefOfficer, approveLeaveByTeamLead, declineLeaveByHR, declineLeaveByManager, declineLeaveByReliefOfficer, fetchLeave, getDepartment } from '../../api';
+import { approveLeaveByHR, approveLeaveByManager, approveLeaveByReliefOfficer, approveLeaveByTeamLead, declineLeaveByHR, declineLeaveByManager, declineLeaveByReliefOfficer, declineLeaveByTeamLead, fetchLeave, getDepartment } from '../../api';
 import ActionModal from '../../components/ActionModal';
 import Button from '@/components/Button';
 import LeaveRequestDetail from '@/components/LeaveRequestDetail';
@@ -125,7 +125,7 @@ export default function LeaveRequests() {
     const statusConfig = {
       'draft': { color: 'bg-gray-100 text-gray-800', label: 'Draft', icon: FiClock },
       'pending-relief': { color: 'bg-yellow-100 text-yellow-800', label: 'Pending Relief', icon: FiUser },
-      'pending-team-lead': { color: 'bg-teal-100 text-teal-500', label: 'Pending Manager', icon: FiClock },
+      'pending-team-lead': { color: 'bg-blue-100 text-blue-500', label: 'pending-team-lead', icon: FiClock },
       'pending-manager': { color: 'bg-teal-100 text-teal-800', label: 'Pending Manager', icon: FiClock },
       'pending-hr': { color: 'bg-purple-100 text-purple-800', label: 'Pending HR', icon: FiClock },
       'approved': { color: 'bg-green-100 text-green-800', label: 'Approved', icon: FiCheckCircle },

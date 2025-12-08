@@ -22,12 +22,14 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
 
   // 1. Find the leave request
   const leaveRequest = await LeaveRequest.findById(id);
+
   if (!leaveRequest) {
     throw new AppError('Leave request not found', 404);
   }
 
-  // 2. Verify the user is the assigned relief officer
-  if (!leaveRequest.teamLeadId.equals(user._id)) {
+  // 2. Verify the user is the employee's manager
+  const employee = await User.findById(leaveRequest.employeeId);
+  if (!employee.teamLeadId || !employee.teamLeadId.equals(user._id)) {
     throw new AppError('You are not assigned as team lead officer for this request', 403);
   }
 
