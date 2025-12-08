@@ -72,8 +72,8 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
   ).populate('employeeId', 'fullName email employeeId')
     .populate('reliefOfficerId', 'fullName email')
 
-  const manager = null;
-  
+  let manager = null;
+
   if (employee.teamLeadId) {
     manager = await User.findById(updatedRequest?.employeeId._id).populate('teamLeadId');
   } else {

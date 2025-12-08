@@ -1,6 +1,5 @@
-import User from "../../../models/User";
-import LeaveRequest from "../../../models/LeaveRequest";
-import LeaveBalance from "../../../models/LeaveBalance";
+import User from "@/models/User";
+import LeaveRequest from "@/models/LeaveRequest";
 
 import { withErrorHandler, ApiResponse, AppError } from "@/libs/errorHandler";
 import { getAuthUser } from "@/libs/middleware";
