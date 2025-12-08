@@ -62,6 +62,19 @@ export const GET = withErrorHandler(async (req) => {
     };
   }
 
+  // -----------------------------------------
+  // 3️⃣ EMPLOYEE → Own + Relief
+  // -----------------------------------------
+  else if (user.role === "team-lead") {
+    console.log("Team lead access");
+    filter = {
+      $or: [
+        { teamLeadId: user._id },
+        // { reliefOfficerId: user._id }
+      ],
+    };
+  }
+
   const leaveRequest = await LeaveRequest.find(filter).sort({ createdAt: -1 })
     .populate([{ path: 'employeeId', populate: { path: 'department' } }, { path: 'reliefOfficerId' }, { path: 'approvalHistory.approvedBy' }]);
 

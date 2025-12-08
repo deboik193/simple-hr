@@ -56,7 +56,6 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
 
   useEffect(() => {
     if (employee) {
-      console.log('hello', employee);
       setFormData({
         fullName: employee.fullName,
         email: employee.email,
@@ -65,10 +64,10 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
         position: employee.position,
         employmentType: employee.employmentType,
         joinDate: employee.joinDate.split('T')[0],
-        branch: employee.branch._id,
+        branch: employee.branch._id || '',
         levels: employee.levels,
         managerId: employee.managerId?._id || '',
-        teamLeadId: employee.teamLeadId?._id || '',
+        teamLeadId: employee.teamLeadId?._id || undefined,
         personalInfo: {
           dateOfBirth: employee.personalInfo?.dateOfBirth?.split('T')[0] || '',
           phoneNumber: employee.personalInfo?.phoneNumber || '',
@@ -106,6 +105,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
+
       onSave(employee ? { ...employee, ...formData } : formData);
     }
   };

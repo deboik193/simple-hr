@@ -21,18 +21,18 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
   const body = await req.json();
 
   const { error, value } = authValidation.registerUser.validate(body);
-
   if (error) throw new AppError('Validation error: ' + error.details[0].message, 400);
-
+  
   const existingUser = await User.findOne({ email: value.email });
-
+  
   if (!existingUser) {
     throw new AppError('User does not exist', 404);
   }
-
+  
+  console.log(id, 'updated user');
   //  Add employeeId to user data before saving
   const updatedNewUser = await User.findByIdAndUpdate(id, value, { new: true, runValidators: true });
-
+  
 
   return ApiResponse.success(updatedNewUser, 'Employee updated successfully');
 });

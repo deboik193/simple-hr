@@ -133,7 +133,7 @@ export const authValidation = {
     },
     password: commonSchemas.password.optional(),
     role: Joi.string()
-      .valid('employee', 'manager', 'hr', 'admin', 'department-head')
+      .valid('employee', 'manager', 'hr', 'admin', 'team-lead')
       .default('employee')
       .messages({
         'any.only': 'Role must be one of: employee, manager, hr, admin'
@@ -147,10 +147,7 @@ export const authValidation = {
       .messages({
         'string.empty': 'Manager is required'
       }),
-    teamLeadId: Joi.string()
-      .messages({
-        'string.empty': 'Team lead is required'
-      }),
+    teamLeadId: Joi.string().allow('').optional(),
     position: commonSchemas.position.required(),
     resetPasswordToken: Joi.string().optional(),
     resetPasswordExpires: Joi.date().optional(),
