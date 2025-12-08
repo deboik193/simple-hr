@@ -10,7 +10,6 @@ import {
   FiClock,
   FiTrendingUp,
   FiEye,
-  FiBriefcase,
   FiGift,
   FiChevronRight
 } from 'react-icons/fi';
@@ -26,55 +25,66 @@ export default function Dashboard() {
     rejectedLeaveRequests: 0,
     approvedLeaveRequests: 0,
     totalLeaveRequests: 0,
+    recentLeaveRequests: []
   });
 
   const [recentRequests, setRecentRequests] = useState([]);
   const [upcomingLeaves, setUpcomingLeaves] = useState([]);
-  const [leaveBalances, setLeaveBalances] = useState([]);
+  const [leaveBalances, setLeaveBalances] = useState({
+    currentUser: {
+      employeeName: '',
+      employeeId: '',
+      department: '',
+      leaveTypes: [],
+      totalRemaining: 0
+    },
+    teamMembers: []
+  });
   const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
-  const [viewingAll, setViewingAll] = useState(false);
   const [showAllTeam, setShowAllTeam] = useState(false);
   const [users, setUsers] = useState({})
   const [loading, setLoading] = useState(true);
   const [role, setRoles] = useState('');
 
-  const dashboardData = async () => {
+  const loadDashboard = async () => {
     setLoading(true);
-    // Fetch dashboard data from API
+
     try {
-      const res = await dashboardStats();
-      if (res?.data) {
+      // Run both API calls in parallel
+      const [statsRes, balanceRes] = await Promise.all([
+        dashboardStats(),
+        dashboardLeaveBalance()
+      ]);
+
+      // Handle stats
+      if (statsRes?.data) {
         setStats({
-          pendingRequests: res.data.pendingLeaveRequests,
-          approvedThisMonth: res.data.approvedLeaveRequests, // not in use currently
-          totalEmployees: res.data.totalEmployees, // not in use currently
-          onLeaveToday: res.data.onLeaveToday.length,
-          birthdayThisWeek: res.data.birthdayThisWeek.length,
-          yourLeaveBalance: res.data.yourLeaveBalance ? res.data.yourLeaveBalance : { balance: 0 },
+          pendingRequests: statsRes.data.pendingLeaveRequests,
+          approvedThisMonth: statsRes.data.approvedLeaveRequests,
+          totalEmployees: statsRes.data.totalEmployees,
+          onLeaveToday: statsRes.data.onLeaveToday.length,
+          birthdayThisWeek: statsRes.data.birthdayThisWeek.length,
+          yourLeaveBalance: statsRes.data.yourLeaveBalance ?? { balance: 0 },
+          rejectedLeaveRequests: statsRes.data.rejectedLeaveRequests,
+          totalLeaveRequests: statsRes.data.totalLeaveRequests,
+          recentLeaveRequests: statsRes.data.recentLeaveRequests || []
         });
       }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
 
-  const leaveBalanceData = async () => {
-    setLoading(true);
-    // Fetch leave balance data from API
-    try {
-      const res = await dashboardLeaveBalance();
-      if (res?.data) {
-        setLeaveBalances(res.data);
+      // Handle leave balances
+      if (balanceRes?.data) {
+        setLeaveBalances(balanceRes.data);
       }
+
     } catch (error) {
-      console.error('Error fetching leave balance data:', error);
+      console.error("Dashboard load error:", error);
+
     } finally {
       setLoading(false);
     }
-  }
-  
+  };
+
+
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     const decoded = token ? jwtDecode(token) : undefined;
@@ -84,8 +94,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Mock data - replace with actual API calls
-    dashboardData();
-    leaveBalanceData();
+    loadDashboard();
 
     setRecentRequests([
       {
@@ -252,63 +261,6 @@ export default function Dashboard() {
       }
     ]);
 
-    // Mock leave balances data
-    setLeaveBalances({
-      currentUser: {
-        employeeId: 'EMP001',
-        employeeName: 'Jessica Wilson',
-        department: 'Engineering',
-        leaveTypes: [
-          { name: 'Annual Leave', total: 20, used: 8, remaining: 12 },
-          { name: 'Sick Leave', total: 10, used: 2, remaining: 8 },
-          { name: 'Personal Leave', total: 5, used: 0, remaining: 5 }
-        ],
-        totalRemaining: 25
-      },
-      teamMembers: [
-        {
-          id: 2,
-          employeeId: 'EMP002',
-          employeeName: 'John Smith',
-          department: 'Marketing',
-          annualLeave: 8,
-          sickLeave: 5,
-          personalLeave: 3,
-          onLeave: false
-        },
-        {
-          id: 3,
-          employeeId: 'EMP003',
-          employeeName: 'Sarah Johnson',
-          department: 'HR',
-          annualLeave: 15,
-          sickLeave: 9,
-          personalLeave: 4,
-          onLeave: false
-        },
-        {
-          id: 4,
-          employeeId: 'EMP004',
-          employeeName: 'Mike Chen',
-          department: 'Engineering',
-          annualLeave: 5,
-          sickLeave: 7,
-          personalLeave: 5,
-          onLeave: true
-        },
-        {
-          id: 5,
-          employeeId: 'EMP005',
-          employeeName: 'Emily Davis',
-          department: 'Engineering',
-          annualLeave: 18,
-          sickLeave: 8,
-          personalLeave: 5,
-          onLeave: false
-        }
-      ]
-    });
-
     // Mock upcoming birthdays for this week
     const today = new Date();
     const currentWeek = getWeekDates(today);
@@ -474,8 +426,8 @@ export default function Dashboard() {
   const TeamMemberCard = ({ member }) => (
     <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${member.onLeave ? 'bg-red-100' : 'bg-blue-100'}`}>
-          <span className={`text-sm font-medium ${member.onLeave ? 'text-red-600' : 'text-blue-600'}`}>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${member.onLeave ? 'bg-red-100' : 'bg-teal-100'}`}>
+          <span className={`text-sm font-medium ${member.onLeave ? 'text-red-600' : 'text-teal-600'}`}>
             {member.employeeName.split(' ').map(n => n[0]).join('')}
           </span>
         </div>
@@ -634,8 +586,8 @@ export default function Dashboard() {
         <div className="grow basis-full md:basis-1/2 lg:basis-1/3 bg-white rounded-lg border border-gray-200 p-6">
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-lg font-semibold text-blue-600">
+              <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                <span className="text-lg font-semibold text-teal-600">
                   {leaveBalances.currentUser.employeeName.split(' ').map(n => n[0]).join('')}
                 </span>
               </div>
@@ -646,7 +598,7 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-4">
-              {leaveBalances.currentUser.leaveTypes.filter(leave => !['emergency', 'compassionate', 'paternity','personal'].includes(leave.name.toLowerCase())).map((leave, index) => (
+              {leaveBalances.currentUser.leaveTypes.filter(leave => !['emergency', 'compassionate', 'paternity', 'personal'].includes(leave.name.toLowerCase())).map((leave, index) => (
                 <LeaveBalanceItem
                   key={index}
                   type={leave.name}
@@ -687,7 +639,7 @@ export default function Dashboard() {
 
                   {leaveBalances.teamMembers.length > 3 && (
                     <button
-                      className="text-blue-600 hover:text-blue-700"
+                      className="text-teal-600 hover:text-teal-700 cursor-pointer font-medium"
                       onClick={() => setShowAllTeam(true)}
                     >
                       View All →
@@ -731,40 +683,34 @@ export default function Dashboard() {
           <div className="grow bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Recent Leave Requests</h2>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                View All
-              </button>
             </div>
             <div className="space-y-4">
-              {recentRequests.slice(0, 4).map((request) => (
+              {stats.recentLeaveRequests.map((request) => (
                 <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-600">
-                          {request.employee.split(' ').map(n => n[0]).join('')}
+                      <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-teal-600">
+                          {request?.employeeId.fullName.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900">{request.employee}</p>
+                          <p className="font-medium text-gray-900">{request?.employeeId.fullName}</p>
                           <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                            {request.type}
+                            {request?.leaveType}
                           </span>
                         </div>
                         <p className="text-sm text-gray-600">
-                          {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
+                          {new Date(request?.startDate).toLocaleDateString()} - {new Date(request?.endDate).toLocaleDateString()}
                           <span className="mx-2">•</span>
-                          {request.days} days
+                          {request?.totalDays} days
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <StatusBadge status={request.status} />
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <FiEye size={18} />
-                    </button>
+                    <StatusBadge status={request?.status} />
                   </div>
                 </div>
               ))}

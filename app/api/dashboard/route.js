@@ -23,7 +23,8 @@ export const GET = withErrorHandler(async (req) => {
       rejectedLeaveRequests,
       yourLeaveBalance,
       onLeaveToday,
-      birthdayThisWeek
+      birthdayThisWeek,
+      recentLeaveRequests
     ] = await Promise.all([
       // 1. Total employees (active only)
       User.countDocuments({ isActive: true }),
@@ -135,7 +136,11 @@ export const GET = withErrorHandler(async (req) => {
             $sort: { daysUntilBirthday: 1, fullName: 1 }
           }
         ]);
-      })()
+      })(),
+
+      // 9. Recent leave requests
+      LeaveRequest.find().populate('employeeId', 'fullName').sort({ createdAt: -1 }).limit(5).lean()
+
     ]);
 
     // Additional dashboard data based on user role
@@ -194,6 +199,8 @@ export const GET = withErrorHandler(async (req) => {
       yourLeaveBalance: yourLeaveBalance || {},
       onLeaveToday: onLeaveToday || [],
       birthdayThisWeek: birthdayThisWeek || [],
+
+      recentLeaveRequests: recentLeaveRequests || [],
 
       // Role-based data
       teamLeaveRequests,

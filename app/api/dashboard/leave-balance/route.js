@@ -1,9 +1,3 @@
-// Alternative: With hardcoded leave settings
-const LEAVE_SETTINGS = [
-  { name: 'Annual Leave', totalDays: 20 },
-  { name: 'Sick Leave', totalDays: 10 },
-  { name: 'Personal Leave', totalDays: 5 }
-];
 import { LEAVETYPE } from "@/constant/constant";
 import User from "@/models/User";
 import LeaveRequest from "@/models/LeaveRequest";
@@ -12,8 +6,6 @@ import { getAuthUser } from "@/libs/middleware";
 import dbConnect from "@/libs/mongodb";
 import LeaveBalance from "@/models/LeaveBalance";
 import InitialLeaveBalance from "@/models/InitialLeaveBalance";
-// import LeaveSetting from "@/models/LeaveSetting"; // Assuming you have this model
-// import Department from "@/models/Department"; // Assuming you have this model
 
 export const GET = withErrorHandler(async (req) => {
   await dbConnect();
@@ -50,7 +42,7 @@ export const GET = withErrorHandler(async (req) => {
 
       const remaining = balance ? balance.balance : 0;
       const used = initialBalances ? initialBalances[0][setting] - remaining : 0;
-    
+
       totalRemaining += remaining;
 
       leaveTypes.push({
@@ -78,6 +70,7 @@ export const GET = withErrorHandler(async (req) => {
 
       // Prepare team members array
       teamMembers = await Promise.all(departmentUsers.map(async (member) => {
+
         const activeLeave = await LeaveRequest.findOne({
           userId: member._id,
           status: 'approved',
@@ -85,7 +78,6 @@ export const GET = withErrorHandler(async (req) => {
           endDate: { $gte: new Date() }
         }).lean();
 
-        console.log('Member Balances:', teamMemberBalances);
 
         const memberBalances = teamMemberBalances.filter(b =>
           b.userId.toString() === member._id.toString()
@@ -93,21 +85,21 @@ export const GET = withErrorHandler(async (req) => {
 
         // Helper function to calculate remaining leave
         const getRemaining = (leaveTypeName) => {
-          const setting = LEAVE_SETTINGS.find(s => s.name === leaveTypeName);
+          const setting = LEAVETYPE.find(s => s === leaveTypeName);
           if (!setting) return 0;
 
           const balance = memberBalances.find(b => b.leaveType === leaveTypeName);
-          return setting.totalDays - (balance ? balance.usedDays : 0);
+          return (balance ? balance.balance : 0);
         };
 
         return {
           id: member._id.toString(),
           employeeId: member.employeeId || '',
-          employeeName: `${member.firstName} ${member.lastName}`,
+          employeeName: `${member.fullName}`,
           department: member.department?.name || '',
-          annualLeave: getRemaining('Annual Leave'),
-          sickLeave: getRemaining('Sick Leave'),
-          personalLeave: getRemaining('Personal Leave'),
+          annualLeave: getRemaining('annual'),
+          sickLeave: getRemaining('sick'),
+          personalLeave: getRemaining('personal'),
           onLeave: !!activeLeave
         };
       }));
