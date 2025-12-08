@@ -67,12 +67,12 @@ export const GET = withErrorHandler(async (req) => {
   // -----------------------------------------
   else if (user.role === "team-lead") {
     // First, find employees in the manager's department
-    const teamLead = await mongoose.model('User').find(
-      { teamLeadId: user.teamLeadId },
+    const employees = await mongoose.model('User').find(
+      { teamLeadId: user._id },
       '_id'
     );
 
-    const employeeIds = teamLead.map(emp => emp._id);
+    const employeeIds = employees.map(emp => emp._id);
 
     filter = {
       $or: [
