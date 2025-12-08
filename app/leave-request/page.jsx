@@ -125,6 +125,7 @@ export default function LeaveRequests() {
     const statusConfig = {
       'draft': { color: 'bg-gray-100 text-gray-800', label: 'Draft', icon: FiClock },
       'pending-relief': { color: 'bg-yellow-100 text-yellow-800', label: 'Pending Relief', icon: FiUser },
+      'pending-team-lead': { color: 'bg-teal-100 text-teal-500', label: 'Pending Manager', icon: FiClock },
       'pending-manager': { color: 'bg-teal-100 text-teal-800', label: 'Pending Manager', icon: FiClock },
       'pending-hr': { color: 'bg-purple-100 text-purple-800', label: 'Pending HR', icon: FiClock },
       'approved': { color: 'bg-green-100 text-green-800', label: 'Approved', icon: FiCheckCircle },
@@ -133,7 +134,7 @@ export default function LeaveRequests() {
       'revoked': { color: 'bg-gray-100 text-gray-800', label: 'Revoked', icon: FiXCircle }
     };
 
-    const config = statusConfig[status] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig['draft'];
     const Icon = config.icon;
 
     return (
@@ -468,7 +469,7 @@ export default function LeaveRequests() {
                     {getReliefStatusBadge(request.reliefStatus)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(request.status)}
+                    {getStatusBadge(request?.status)}
                     <div className="text-xs text-gray-500 mt-1">
                       {new Date(request.createdAt).toLocaleDateString()}
                     </div>
