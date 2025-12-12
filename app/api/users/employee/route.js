@@ -26,89 +26,139 @@ export const GET = withErrorHandler(async (req) => {
 
 export const POST = withErrorHandler(async (req) => {
   await dbConnect();
+  const session = await mongoose.startSession();
 
-  const { user, errors } = await getAuthUser(req)
-  if (errors) return errors;
-  if (!user) throw new AppError('Unauthorized', 401);
+  try {
+    return await session.withTransaction(async () => {
+      const { user, errors } = await getAuthUser(req);
+      if (errors) return errors;
+      if (!user) throw new AppError('Unauthorized', 401);
 
-  if (user.role !== 'admin' && user.role !== 'hr') {
-    throw new AppError('Forbidden', 403);
+      if (user.role !== 'admin' && user.role !== 'hr') {
+        throw new AppError('Forbidden', 403);
+      }
+
+      const body = await req.json();
+      const { error, value } = authValidation.registerUser.validate(body);
+
+      if (error) {
+        throw new AppError(`Validation error: ${error.details[0].message}`, 400);
+      }
+
+      // Sanitize inputs
+      value.email = value.email.trim().toLowerCase();
+
+      // Validate join date
+      if (new Date(value.joinDate) > new Date()) {
+        throw new AppError('Join date cannot be in the future', 400);
+      }
+
+      const INITIAL_BALANCE_ID = process.env.INITIAL_BALANCE_ID;
+      const initialBalance = await InitialLeaveBalance.findOne({
+        _id: INITIAL_BALANCE_ID
+      }).session(session);
+
+      if (!initialBalance) {
+        throw new AppError('Initial leave balance configuration not found', 500);
+      }
+
+      const leaveBalance = LEAVETYPE.reduce((acc, type) => ({
+        ...acc,
+        [type]: initialBalance[type]
+      }), {});
+
+      let existingUser = await User.findOne({ email: value.email }).session(session);
+
+      if (existingUser) {
+        // Reactivate existing user
+        const updatedUser = await User.findOneAndUpdate(
+          { email: value.email },
+          {
+            isActive: true,
+            ...value,
+            leaveBalance,
+            updatedAt: new Date()
+          },
+          { new: true, session }
+        );
+
+        await createLeaveBalances(updatedUser, session);
+        return ApiResponse.success(updatedUser, 'User re-activated successfully');
+      }
+
+      // Create new user
+      const employeeId = generateEmployeeId(value.fullName);
+      const password = await generateTemporaryPassword();
+
+      const newUser = await User.create([{
+        ...value,
+        employeeId,
+        password: await hashPassword(password),
+        leaveBalance
+      }], { session });
+
+      await createLeaveBalances(newUser[0], session);
+      await emailService.sendWelcomeEmail(newUser[0], password);
+
+      return ApiResponse.success(newUser[0], 'Employee created successfully');
+    });
+  } finally {
+    session.endSession();
   }
+});
 
-  const body = await req.json();
-
-  const { error, value } = authValidation.registerUser.validate(body);
-
-  if (error) throw new AppError('Validation error: ' + error.details[0].message, 400);
-
-  const existingUser = await User.findOne({ email: value.email });
-
-  if (existingUser) {
-    await User.findOneAndUpdate({ email: value.email }, { isActive: true, ...value }, { new: true });
-
-    return ApiResponse.success(existingUser, 'User re-activated successfully');
-  }
-
-  //  Count total users (or employees)
-  const employeeCount = await User.countDocuments();
-
-  //  Generate next employee ID
-  const employeeId = `${value.fullName?.split(' ').map(n => n[0]).join('')}${String(employeeCount + 1).padStart(3, '0')}`;
-  const password = await hashPassword(employeeId.toLocaleLowerCase());
-
-  const InitialBalance = await InitialLeaveBalance.findOne({ _id: '68ff46338509515e3f0f46ac' }); // Replace with actual ID or criteria
-
-  const leaveBalance = LEAVETYPE.reduce((acc, type) => {
-    acc[type] = InitialBalance[type];
-    return acc;
-  }, {})
-
-  //  1. Add employeeId to user data before saving
-  const createNewUser = await User.create({
-    ...value,
-    employeeId,
-    password,
-    leaveBalance
-  });
-
-  // 2. Get active leave policies for this employment type
+// Helper functions defined outside
+async function createLeaveBalances(user, session) {
   const leavePolicies = await LeavePolicy.find({
     isActive: true,
-    'eligibility.employmentTypes': createNewUser.employmentType
-  });
+    'eligibility.employmentTypes': user.employmentType
+  }).session(session);
 
-  // 3. Create leave balance records for each applicable policy
   const currentYear = new Date().getFullYear();
+  const balanceDocs = leavePolicies.map(policy => ({
+    userId: user._id,
+    leaveType: policy.leaveType,
+    balance: calculateInitialBalance(policy, user),
+    accrualRate: policy.accrual.rate,
+    maxAccrual: policy.accrual.maxBalance,
+    carryOverLimit: policy.carryOver.enabled ? policy.carryOver.maxDays : 0,
+    carryOverUsed: 0,
+    fiscalYear: currentYear
+  }));
 
-  for (const policy of leavePolicies) {
-    await LeaveBalance.create({
-      userId: createNewUser._id,
-      leaveType: policy.leaveType,
-      balance: calculateInitialBalance(policy) || 0, // Initial balance
-      accrualRate: policy.accrual.rate,
-      maxAccrual: policy.accrual.maxBalance,
-      carryOverLimit: policy.carryOver.enabled ? policy.carryOver.maxDays : 0,
-      carryOverUsed: 0,
-      fiscalYear: currentYear
-    });
+  if (balanceDocs.length > 0) {
+    await LeaveBalance.insertMany(balanceDocs, { session });
   }
+}
 
-  function calculateInitialBalance(policy) {
-    // Pro-rate based on join date, or use policy default
-    const joinDate = new Date(createNewUser.joinDate);
-    const today = new Date();
-    const monthsWorked = (today.getFullYear() - joinDate.getFullYear()) * 12 +
-      (today.getMonth() - joinDate.getMonth());
+function calculateInitialBalance(policy, user) {
+  const joinDate = new Date(user.joinDate);
+  const today = new Date();
 
-    if (monthsWorked <= 0) return 0;
+  // Ensure join date is valid
+  if (isNaN(joinDate.getTime())) return 0;
 
-    return Math.min(
-      monthsWorked * policy.accrual.rate,
-      policy.accrual.maxBalance
-    );
-  }
+  const monthsWorked = (today.getFullYear() - joinDate.getFullYear()) * 12 +
+    (today.getMonth() - joinDate.getMonth());
 
-  await emailService.sendWelcomeEmail(createNewUser);
+  return monthsWorked <= 0
+    ? 0
+    : Math.min(monthsWorked * policy.accrual.rate, policy.accrual.maxBalance);
+}
 
-  return ApiResponse.success(createNewUser, 'Employee created successfully');
-});
+function generateEmployeeId(fullName) {
+  const initials = (fullName || '')
+    .split(' ')
+    .map(n => n.charAt(0))
+    .join('')
+    .toUpperCase()
+    .slice(0, 3);
+
+  const uniqueId = Date.now().toString().slice(-4);
+  return `${initials}${uniqueId}`;
+}
+
+async function generateTemporaryPassword() {
+  // Generate secure temporary password
+  return crypto.randomBytes(8).toString('hex');
+}

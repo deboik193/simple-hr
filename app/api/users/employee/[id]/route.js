@@ -22,16 +22,16 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
 
   const { error, value } = authValidation.registerUser.validate(body);
   if (error) throw new AppError('Validation error: ' + error.details[0].message, 400);
-  
+
   const existingUser = await User.findOne({ email: value.email });
-  
+
   if (!existingUser) {
     throw new AppError('User does not exist', 404);
   }
-  
+
   //  Add employeeId to user data before saving
   const updatedNewUser = await User.findByIdAndUpdate(id, value, { new: true, runValidators: true });
-  
+
 
   return ApiResponse.success(updatedNewUser, 'Employee updated successfully');
 });
@@ -39,7 +39,7 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
 export const DELETE = withErrorHandler(async (req, { params }) => {
   await dbConnect();
 
-  const id = params.id;
+  const { id } = await params;
 
   const { user, errors } = await getAuthUser(req)
   if (errors) return errors;
@@ -50,7 +50,6 @@ export const DELETE = withErrorHandler(async (req, { params }) => {
   }
 
   const existingUser = await User.findOne({ _id: id });
-
   if (!existingUser) {
     throw new AppError('User does not exist', 404);
   }

@@ -177,7 +177,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
                 <p className="text-sm text-gray-500">{request.reliefOfficerId.employeeId}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Relief Status</p>
+                <p className="text-sm text-gray-600">Status</p>
                 <p className="font-medium text-gray-900 capitalize">{request.reliefStatus}</p>
                 {request.reliefNotes && (
                   <div className="mt-2">
@@ -205,7 +205,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">{history.approvedBy.fullName}</p>
+                      <p className="font-medium text-gray-900 capitalize">{history.approvedBy.fullName}</p>
                       <span className="text-xs text-gray-500 capitalize">{getRoleDisplay(history.role)}</span>
                     </div>
                     <p className="text-sm text-gray-700 capitalize">{getActionDisplay(history.action)}</p>
