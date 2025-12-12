@@ -4,6 +4,7 @@ import dbConnect from "@/libs/mongodb";
 import User from "@/models/User";
 import { authValidation } from "@/libs/validator";
 import LeaveBalance from "@/models/LeaveBalance";
+import LeaveRequest from "@/models/LeaveRequest";
 
 export const PATCH = withErrorHandler(async (req, { params }) => {
   await dbConnect();
@@ -64,6 +65,7 @@ export const DELETE = withErrorHandler(async (req, { params }) => {
   );
 
   await LeaveBalance.deleteMany({ userId: id });
+  await LeaveRequest.deleteMany({ employeeId: id });
 
   return ApiResponse.success({}, 'Employee deleted successfully');
 });
