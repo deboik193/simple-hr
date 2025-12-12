@@ -9,9 +9,7 @@ import {
   FiCalendar,
   FiClock,
   FiTrendingUp,
-  FiEye,
   FiGift,
-  FiChevronRight
 } from 'react-icons/fi';
 
 export default function Dashboard() {
@@ -68,6 +66,39 @@ export default function Dashboard() {
           totalLeaveRequests: statsRes.data.totalLeaveRequests,
           recentLeaveRequests: statsRes.data.recentLeaveRequests || []
         });
+
+        // Process upcoming birthdays
+        const today = new Date();
+        const weekDates = getWeekDates(today);
+
+        const birthdays = statsRes.data.birthdayThisWeek.map((bday) => {
+          const birthDate = new Date(bday.dateOfBirth);
+          const currentYear = today.getFullYear();
+          let nextBirthday = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
+
+          // If birthday has passed this year, set to next year
+          if (nextBirthday < today) {
+            nextBirthday.setFullYear(currentYear + 1);
+          }
+          const daysUntilBirthday = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+          const justPassed = daysUntilBirthday < 0;
+
+          // Assign avatar color based on employee ID
+          const avatarColor = `bg-${['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'teal'][bday.employeeId.charCodeAt(0) % 7]}-100`;
+          return {
+            id: bday.employeeId,
+            employeeName: bday.fullName,
+            department: bday.department,
+            birthday: formatBirthdayForWeek(bday.dateOfBirth, weekDates),
+            age: today.getFullYear() - birthDate.getFullYear(),
+            avatarColor,
+            justPassed
+          };
+        });
+        setUpcomingBirthdays(birthdays);
+
+        // Process upcoming leaves
+        setUpcomingLeaves(statsRes.data.upcomingLeaves || []);
       }
 
       // Handle leave balances
@@ -95,85 +126,33 @@ export default function Dashboard() {
     // Mock data - replace with actual API calls
     loadDashboard();
 
-    setUpcomingLeaves([
-      {
-        id: 1,
-        employee: 'Mike Chen',
-        type: 'Annual',
-        startDate: '2024-01-18',
-        endDate: '2024-01-25',
-        days: 7
-      },
-      {
-        id: 2,
-        employee: 'Emily Davis',
-        type: 'Maternity',
-        startDate: '2024-02-01',
-        endDate: '2024-08-01',
-        days: 180
-      },
-      {
-        id: 3,
-        employee: 'Robert Brown',
-        type: 'Annual',
-        startDate: '2024-01-22',
-        endDate: '2024-01-26',
-        days: 4
-      }
-    ]);
+    // setUpcomingLeaves([
+    //   {
+    //     id: 1,
+    //     employee: 'Mike Chen',
+    //     type: 'Annual',
+    //     startDate: '2024-01-18',
+    //     endDate: '2024-01-25',
+    //     days: 7
+    //   },
+    //   {
+    //     id: 2,
+    //     employee: 'Emily Davis',
+    //     type: 'Maternity',
+    //     startDate: '2024-02-01',
+    //     endDate: '2024-08-01',
+    //     days: 180
+    //   },
+    //   {
+    //     id: 3,
+    //     employee: 'Robert Brown',
+    //     type: 'Annual',
+    //     startDate: '2024-01-22',
+    //     endDate: '2024-01-26',
+    //     days: 4
+    //   }
+    // ]);
 
-    // Mock upcoming birthdays for this week
-    const today = new Date();
-    const currentWeek = getWeekDates(today);
-
-    setUpcomingBirthdays([
-      {
-        id: 1,
-        employeeName: 'Michael Rodriguez',
-        department: 'Sales',
-        birthDate: '1990-01-15', // Today or within week
-        birthday: formatBirthdayForWeek('1990-01-15', currentWeek),
-        age: 34,
-        avatarColor: 'bg-pink-100 text-pink-600'
-      },
-      {
-        id: 2,
-        employeeName: 'Jennifer Lee',
-        department: 'Design',
-        birthDate: '1992-01-16', // Tomorrow
-        birthday: formatBirthdayForWeek('1992-01-16', currentWeek),
-        age: 32,
-        avatarColor: 'bg-blue-100 text-blue-600'
-      },
-      {
-        id: 3,
-        employeeName: 'David Kim',
-        department: 'Engineering',
-        birthDate: '1988-01-18', // This week
-        birthday: formatBirthdayForWeek('1988-01-18', currentWeek),
-        age: 36,
-        avatarColor: 'bg-green-100 text-green-600'
-      },
-      {
-        id: 4,
-        employeeName: 'Sophia Martinez',
-        department: 'Marketing',
-        birthDate: '1995-01-20', // This week
-        birthday: formatBirthdayForWeek('1995-01-20', currentWeek),
-        age: 29,
-        avatarColor: 'bg-purple-100 text-purple-600'
-      },
-      {
-        id: 5,
-        employeeName: 'Alex Thompson',
-        department: 'HR',
-        birthDate: '1991-01-14', // Yesterday
-        birthday: formatBirthdayForWeek('1991-01-14', currentWeek),
-        age: 33,
-        avatarColor: 'bg-yellow-100 text-yellow-600',
-        justPassed: true
-      }
-    ]);
   }, []);
 
   useEffect(() => {
@@ -374,15 +353,11 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex flex-col items-end">
-          {isToday ? (
+          {isToday &&
             <button className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1 rounded-lg text-sm font-medium transition-colors">
               Send Wishes
             </button>
-          ) : (
-            <button className="text-gray-400 hover:text-gray-600">
-              <FiChevronRight size={20} />
-            </button>
-          )}
+          }
           {justPassed && (
             <span className="text-xs text-gray-500 mt-2">
               {birthday.birthday}
@@ -547,7 +522,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4">
               {stats.recentLeaveRequests.map((request) => (
-                <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div key={request._id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
@@ -589,25 +564,12 @@ export default function Dashboard() {
               </h2>
               <p className="text-sm text-gray-600">Wish your colleagues a happy birthday</p>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View All Birthdays
-            </button>
           </div>
           <div className="space-y-3">
-            {upcomingBirthdays.slice(0, 3).map((birthday) => (
+            {upcomingBirthdays.map((birthday) => (
               <BirthdayCard key={birthday.id} birthday={birthday} />
             ))}
           </div>
-          {upcomingBirthdays.filter(b => b.justPassed).length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-500">
-                Showing {upcomingBirthdays.filter(b => !b.justPassed).length} upcoming birthdays
-                {upcomingBirthdays.filter(b => b.justPassed).length > 0 &&
-                  ` and ${upcomingBirthdays.filter(b => b.justPassed).length} recent birthdays`
-                }
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -615,30 +577,27 @@ export default function Dashboard() {
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Upcoming Leaves</h2>
-          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-            View Calendar
-          </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {upcomingLeaves.map((leave) => (
-            <div key={leave.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+            <div key={leave._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-green-600">
-                    {leave.employee.split(' ').map(n => n[0]).join('')}
+                    {leave.employeeId?.fullName.split(' ').map(n => n[0]).join('')}
                   </span>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{leave.employee}</p>
-                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                    {leave.type}
+                  <p className="font-medium text-gray-900 capitalize">{leave.employeeId?.fullName}</p>
+                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded capitalize">
+                    {leave.leaveType} Leave
                   </span>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Duration:</span>
-                  <span className="font-medium text-gray-900">{leave.days} days</span>
+                  <span className="font-medium text-gray-900">{leave.totalDays} days</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Starts:</span>
@@ -651,16 +610,6 @@ export default function Dashboard() {
                   <span className="font-medium text-gray-900">
                     {new Date(leave.endDate).toLocaleDateString()}
                   </span>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">
-                    {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
-                  </span>
-                  <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                    View Details
-                  </button>
                 </div>
               </div>
             </div>

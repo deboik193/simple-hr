@@ -24,7 +24,8 @@ export const GET = withErrorHandler(async (req) => {
       yourLeaveBalance,
       onLeaveToday,
       birthdayThisWeek,
-      recentLeaveRequests
+      recentLeaveRequests,
+      upcomingLeaves
     ] = await Promise.all([
       // 1. Total employees (active only)
       User.countDocuments({ isActive: true }),
@@ -56,17 +57,6 @@ export const GET = withErrorHandler(async (req) => {
 
       // 8. Birthdays this week - FIXED VERSION
       (async () => {
-        // Helper function to format birthday for week display
-        function formatBirthdayForWeek(birthDate, weekRange) {
-          const now = new Date();
-          const currentYear = now.getFullYear();
-          const birthdayThisYear = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
-          if (birthdayThisYear < weekRange.start) {
-            return new Date(currentYear + 1, birthDate.getMonth(), birthDate.getDate());
-          }
-          return birthdayThisYear;
-        }
-
         const now = new Date();
         const currentYear = now.getFullYear();
 
@@ -79,52 +69,11 @@ export const GET = withErrorHandler(async (req) => {
         endOfWeek.setDate(now.getDate() + (6 - now.getDay())); // Saturday
         endOfWeek.setHours(23, 59, 59, 999);
 
-        // Process the results to add calculated fields
-        birthdays.map((birthday, index) => {
-          // Generate deterministic avatar color based on seed
-          const colors = [
-            'bg-pink-100 text-pink-600',
-            'bg-purple-100 text-purple-600',
-            'bg-indigo-100 text-indigo-600',
-            'bg-blue-100 text-blue-600',
-            'bg-cyan-100 text-cyan-600',
-            'bg-teal-100 text-teal-600',
-            'bg-green-100 text-green-600',
-            'bg-yellow-100 text-yellow-600',
-            'bg-orange-100 text-orange-600',
-            'bg-red-100 text-red-600'
-          ];
-
-          // Create a simple hash from the seed string
-          const seed = birthday.avatarColorSeed || birthday.employeeId || birthday.employeeName;
-          let hash = 0;
-          for (let i = 0; i < seed.length; i++) {
-            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-          }
-          const colorIndex = Math.abs(hash) % colors.length;
-
-          // Format birthday for week display
-          const birthdayForWeek = formatBirthdayForWeek(birthday.birthDate, {
-            start: startOfWeek,
-            end: endOfWeek
-          });
-
-          return {
-            id: birthday.id || birthday._id || index + 1,
-            employeeName: birthday.employeeName,
-            department: birthday.department || 'Not Assigned',
-            birthDate: birthday.birthDate,
-            birthday: birthdayForWeek, // This needs the formatBirthdayForWeek function
-            age: birthday.age,
-            avatarColor: colors[colorIndex],
-            // Additional fields for your frontend
-            employeeId: birthday.employeeId,
-            email: birthday.email,
-            position: birthday.position,
-            nextBirthday: birthday.nextBirthday,
-            daysUntilBirthday: birthday.daysUntilBirthday
-          };
-        });
+        // Format dates for comparison
+        const todayStr = now.toDateString();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        const tomorrowStr = tomorrow.toDateString();
 
         return await User.aggregate([
           {
@@ -187,11 +136,12 @@ export const GET = withErrorHandler(async (req) => {
           },
           {
             $addFields: {
-              // Calculate age at next birthday
-              birthYear: { $year: '$personalInfo.dateOfBirth' },
-              nextBirthdayYear: { $year: '$nextBirthday' },
+              // Calculate age
               age: {
-                $subtract: ['$nextBirthdayYear', '$birthYear']
+                $subtract: [
+                  { $year: '$nextBirthday' },
+                  { $year: '$personalInfo.dateOfBirth' }
+                ]
               },
               // Format date as YYYY-MM-DD
               birthDateFormatted: {
@@ -200,6 +150,35 @@ export const GET = withErrorHandler(async (req) => {
                   date: '$personalInfo.dateOfBirth'
                 }
               },
+              // Format next birthday for display
+              nextBirthdayFormatted: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: '$nextBirthday'
+                }
+              },
+              // Calculate days until birthday
+              daysUntilBirthday: {
+                $ceil: {
+                  $divide: [
+                    { $subtract: ['$nextBirthday', now] },
+                    1000 * 60 * 60 * 24
+                  ]
+                }
+              },
+              // Get day of week and formatted date for display
+              nextBirthdayDayOfWeek: {
+                $dayOfWeek: '$nextBirthday'
+              },
+              nextBirthdayMonth: {
+                $month: '$nextBirthday'
+              },
+              nextBirthdayDay: {
+                $dayOfMonth: '$nextBirthday'
+              },
+              // Calculate age at next birthday
+              birthYear: { $year: '$personalInfo.dateOfBirth' },
+              nextBirthdayYear: { $year: '$nextBirthday' },
               // Generate a consistent avatar color based on employee ID or name
               avatarColorSeed: {
                 $cond: {
@@ -207,7 +186,7 @@ export const GET = withErrorHandler(async (req) => {
                   then: '$employeeId',
                   else: '$fullName'
                 }
-              }
+              },
             }
           },
           {
@@ -219,17 +198,92 @@ export const GET = withErrorHandler(async (req) => {
               department: '$departmentInfo.name',
               dateOfBirth: '$personalInfo.dateOfBirth',
               birthDate: '$birthDateFormatted',
+              // Create birthday display string
+              birthday: {
+                $let: {
+                  vars: {
+                    // Format date like "Tue, Dec 10"
+                    formattedDate: {
+                      $concat: [
+                        {
+                          $switch: {
+                            branches: [
+                              { case: { $eq: ['$nextBirthdayDayOfWeek', 1] }, then: 'Sun' },
+                              { case: { $eq: ['$nextBirthdayDayOfWeek', 2] }, then: 'Mon' },
+                              { case: { $eq: ['$nextBirthdayDayOfWeek', 3] }, then: 'Tue' },
+                              { case: { $eq: ['$nextBirthdayDayOfWeek', 4] }, then: 'Wed' },
+                              { case: { $eq: ['$nextBirthdayDayOfWeek', 5] }, then: 'Thu' },
+                              { case: { $eq: ['$nextBirthdayDayOfWeek', 6] }, then: 'Fri' },
+                              { case: { $eq: ['$nextBirthdayDayOfWeek', 7] }, then: 'Sat' }
+                            ],
+                            default: ''
+                          }
+                        },
+                        ', ',
+                        {
+                          $switch: {
+                            branches: [
+                              { case: { $eq: ['$nextBirthdayMonth', 1] }, then: 'Jan' },
+                              { case: { $eq: ['$nextBirthdayMonth', 2] }, then: 'Feb' },
+                              { case: { $eq: ['$nextBirthdayMonth', 3] }, then: 'Mar' },
+                              { case: { $eq: ['$nextBirthdayMonth', 4] }, then: 'Apr' },
+                              { case: { $eq: ['$nextBirthdayMonth', 5] }, then: 'May' },
+                              { case: { $eq: ['$nextBirthdayMonth', 6] }, then: 'Jun' },
+                              { case: { $eq: ['$nextBirthdayMonth', 7] }, then: 'Jul' },
+                              { case: { $eq: ['$nextBirthdayMonth', 8] }, then: 'Aug' },
+                              { case: { $eq: ['$nextBirthdayMonth', 9] }, then: 'Sep' },
+                              { case: { $eq: ['$nextBirthdayMonth', 10] }, then: 'Oct' },
+                              { case: { $eq: ['$nextBirthdayMonth', 11] }, then: 'Nov' },
+                              { case: { $eq: ['$nextBirthdayMonth', 12] }, then: 'Dec' }
+                            ],
+                            default: ''
+                          }
+                        },
+                        ' ',
+                        { $toString: '$nextBirthdayDay' }
+                      ]
+                    }
+                  },
+                  in: {
+                    $switch: {
+                      branches: [
+                        // Check if today
+                        {
+                          case: {
+                            $eq: [
+                              '$nextBirthdayFormatted',
+                              { $dateToString: { format: "%Y-%m-%d", date: now } }
+                            ]
+                          },
+                          then: { $concat: ['Today (', '$$formattedDate', ')'] }
+                        },
+                        // Check if tomorrow
+                        {
+                          case: {
+                            $eq: [
+                              '$nextBirthdayFormatted',
+                              { $dateToString: { format: "%Y-%m-%d", date: tomorrow } }
+                            ]
+                          },
+                          then: { $concat: ['Tomorrow (', '$$formattedDate', ')'] }
+                        },
+                        // Default format
+                        {
+                          case: { $ne: ['$$formattedDate', ''] },
+                          then: '$$formattedDate'
+                        }
+                      ],
+                      default: 'Unknown'
+                    }
+                  }
+                }
+              },
               age: 1,
               avatarColorSeed: 1,
               nextBirthday: 1,
-              daysUntilBirthday: {
-                $ceil: {
-                  $divide: [
-                    { $subtract: ['$nextBirthday', now] },
-                    1000 * 60 * 60 * 24 // Convert milliseconds to days
-                  ]
-                }
-              }
+              daysUntilBirthday: 1,
+              birthYear: 1,
+              nextBirthdayYear: 1
             }
           },
           {
@@ -239,11 +293,12 @@ export const GET = withErrorHandler(async (req) => {
       })(),
 
       // 9. Recent leave requests
-      LeaveRequest.find().populate('employeeId', 'fullName').sort({ createdAt: -1 }).limit(5).lean()
+      LeaveRequest.find().populate('employeeId', 'fullName').sort({ createdAt: -1 }).limit(5).lean(),
+
+      // 10. upcoming leaves can be added here
+      LeaveRequest.find({ status: 'approved', startDate: { $gte: new Date() } }).sort({ startDate: 1 }).limit(5).lean().populate('employeeId', 'fullName employeeId position')
 
     ]);
-
-    console.log('Dashboard data fetched for user:', birthdayThisWeek);
 
     // Additional dashboard data based on user role
     let teamLeaveRequests = [];
@@ -314,7 +369,9 @@ export const GET = withErrorHandler(async (req) => {
         employeeId: user.employeeId,
         role: user.role,
         department: user.department
-      }
+      },
+
+      upcomingLeaves: upcomingLeaves || []
 
     }, 'Dashboard data fetched successfully');
 
