@@ -126,33 +126,6 @@ export default function Dashboard() {
     // Mock data - replace with actual API calls
     loadDashboard();
 
-    // setUpcomingLeaves([
-    //   {
-    //     id: 1,
-    //     employee: 'Mike Chen',
-    //     type: 'Annual',
-    //     startDate: '2024-01-18',
-    //     endDate: '2024-01-25',
-    //     days: 7
-    //   },
-    //   {
-    //     id: 2,
-    //     employee: 'Emily Davis',
-    //     type: 'Maternity',
-    //     startDate: '2024-02-01',
-    //     endDate: '2024-08-01',
-    //     days: 180
-    //   },
-    //   {
-    //     id: 3,
-    //     employee: 'Robert Brown',
-    //     type: 'Annual',
-    //     startDate: '2024-01-22',
-    //     endDate: '2024-01-26',
-    //     days: 4
-    //   }
-    // ]);
-
   }, []);
 
   useEffect(() => {
@@ -186,21 +159,21 @@ export default function Dashboard() {
 
   // Helper function to format birthday display
   function formatBirthdayForWeek(birthDate, week) {
-    const birth = new Date(birthDate);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const isToday = birth.getDate() === today.getDate() &&
-      birth.getMonth() === today.getMonth();
-    const isTomorrow = birth.getDate() === tomorrow.getDate() &&
-      birth.getMonth() === tomorrow.getMonth();
-
-    if (isToday) return 'Today';
-    if (isTomorrow) return 'Tomorrow';
-
-    const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][birth.getDay()];
-    return `${dayOfWeek}, ${birth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    const bDate = new Date(birthDate);
+    const currentYear = new Date().getFullYear();
+    const nextBirthday = new Date(currentYear, bDate.getMonth(), bDate.getDate());
+    for (let i = 0; i < week.length; i++) {
+      if (week[i].getMonth() === nextBirthday.getMonth() && week[i].getDate() === nextBirthday.getDate()) {
+        if (i === 0) return 'Monday';
+        if (i === 1) return 'Tuesday';
+        if (i === 2) return 'Wednesday';
+        if (i === 3) return 'Thursday';
+        if (i === 4) return 'Friday';
+        if (i === 5) return 'Saturday';
+        if (i === 6) return 'Sunday';
+      }
+    }
+    return 'Later';
   }
 
   const StatCard = ({ title, value, icon: Icon, color, subtitle }) => (
