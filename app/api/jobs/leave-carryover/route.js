@@ -8,6 +8,14 @@ export const GET = withErrorHandler(async () => {
 
   await dbConnect();
 
+  // Prevent unauthorized access by adding the CRON_SECRET environment variable to your project and check incoming requests. Vercel will add it to all cron job invocations as part of the Authorization header, allowing you to specify any value you'd like for authorization.
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers.get('Authorization');
+  
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    throw new AppError('Unauthorized', 401);
+  }
+
   const newYear = new Date().getFullYear();
   const previousYear = newYear - 1;
   const users = await User.find({ isActive: true });

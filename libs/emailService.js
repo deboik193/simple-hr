@@ -163,10 +163,10 @@ class EmailService {
   }
 
   async notifyDeclinedLeaveRequestEmployeeOnly(leaveRequest, declineReason, role) {
-    const { employeeId, startDate, endDate } = leaveRequest;      
+    const { employeeId, startDate, endDate } = leaveRequest;
     return this.sendEmail(
       employeeId.email,
-      'Leave Request Declined by '+ (role || 'Manager'),
+      'Leave Request Declined by ' + (role || 'Manager'),
       'leaveDeclinedEmployeeOnly',
       {
         employeeName: employeeId.fullName,
@@ -179,13 +179,13 @@ class EmailService {
   }
 
   async notifyFinalApproval(leaveRequest) {
-    const { employeeId, reliefOfficerId, startDate, endDate } = leaveRequest; 
+    const { employeeId, reliefOfficerId, startDate, endDate } = leaveRequest;
     return this.sendEmail(
       [employeeId.email, reliefOfficerId.email],
       'Leave Request Approved',
       'leaveApprovedAll',
       {
-        employeeName: employeeId.fullName,  
+        employeeName: employeeId.fullName,
         reliefOfficerName: reliefOfficerId.fullName,
         startDate: startDate.toDateString(),
         endDate: endDate.toDateString(),
@@ -193,15 +193,25 @@ class EmailService {
     )
   }
 
-  async birthdayNotification(user) {
+  async birthdayNotification(hr, birthdays) {
     return this.sendEmail(
-      user.email,
-      'Upcoming Birthday Notification',
+      hr.email,
+      'Weekly Birthday Reminder',
       'getBirthdayTemplate',
       {
-        employeeName: user.fullName,
-        department: user.department,
-        birthdayDate: user.dateOfBirth.toDateString(),
+        hrName: hr.fullName,
+        birthdays: birthdays.map(b => ({
+          employeeName: b.fullName,
+          department: b.department?.name || 'Unknown',
+          birthdayDate: new Date(b.nextBirthday).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          daysUntil: b.daysUntilBirthday
+        })),
+        count: birthdays.length
       }
     );
   }

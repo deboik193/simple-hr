@@ -80,6 +80,7 @@ const userSchema = new mongoose.Schema({
   personalInfo: {
     dateOfBirth: {
       type: Date,
+      index: true // Add index for birthday queries
     },
     phoneNumber: String,
     emergencyContact: {
@@ -99,6 +100,8 @@ const userSchema = new mongoose.Schema({
 // Index for efficient queries
 userSchema.index({ department: 1, isActive: 1 });
 userSchema.index({ managerId: 1 });
+userSchema.index({ 'personalInfo.dateOfBirth': 1 });
+userSchema.index({ isActive: 1, 'preferences.notifications': 1 });
 
 userSchema.pre('save', async function (next) {
 
@@ -117,18 +120,27 @@ userSchema.pre('save', async function (next) {
 })
 
 // Add method to check birthday
+// Fixed birthday check method
 userSchema.methods.isBirthdayThisWeek = function () {
+  if (!this.personalInfo?.dateOfBirth) return false;
+
   const now = new Date();
   const birthDate = new Date(this.personalInfo.dateOfBirth);
-  const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+  const currentYear = now.getFullYear();
 
-  if (nextBirthday < now) {
-    nextBirthday.setFullYear(now.getFullYear() + 1);
-  }
+  // Create birthday for current year
+  const birthdayThisYear = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
 
-  const diffTime = nextBirthday - now;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays <= 7; // Notify one week before
+  // If birthday has already passed this year, check next year
+  const nextBirthday = birthdayThisYear < now
+    ? new Date(currentYear + 1, birthDate.getMonth(), birthDate.getDate())
+    : birthdayThisYear;
+
+  // Calculate days until next birthday
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const diffDays = Math.ceil((nextBirthday - now) / msPerDay);
+
+  return diffDays <= 7;
 };
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);

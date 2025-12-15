@@ -441,6 +441,13 @@ export const emailTemplates = {
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { text-align: center; padding: 20px 0; }
+        .birthday-list { margin: 20px 0; }
+        .birthday-item { 
+          padding: 15px; 
+          margin: 10px 0; 
+          border-left: 4px solid #4CAF50;
+          background-color: #f9f9f9;
+        }
         .footer { 
           margin-top: 30px;
           padding-top: 20px;
@@ -453,31 +460,30 @@ export const emailTemplates = {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🎂 Birthday Reminder</h1>
+          <h1>🎂 Weekly Birthday Reminder</h1>
         </div>
 
-        <p>Hello HR,</p>
+        <p>Hello ${data.hrName},</p>
 
-        <p>
-          This is a reminder that 
-          <strong>${data.employeeName}</strong> from the 
-          <strong>${data.department}</strong> department has a birthday coming up!
-        </p>
+        <p>Here are the upcoming birthdays for the next week:</p>
 
-        <p>
-          <strong>Birthday:</strong> ${data.birthdayDate}
-        </p>
+        <div class="birthday-list">
+          ${data.birthdays.map(birthday => `
+            <div class="birthday-item">
+              <h3>${birthday.employeeName}</h3>
+              <p><strong>Department:</strong> ${birthday.department}</p>
+              <p><strong>Birthday:</strong> ${birthday.birthdayDate} (in ${birthday.daysUntil} days)</p>
+            </div>
+          `).join('')}
+        </div>
 
-        <p>
-          Please consider sending birthday wishes to help make their day special.
-        </p>
+        <p>Total: ${data.count} ${data.count === 1 ? 'birthday' : 'birthdays'} this week.</p>
 
         <div class="footer">
-          <p>This is an automated message from Simple HR.</p>
+          <p>This is an automated weekly reminder from Simple HR.</p>
         </div>
       </div>
     </body>
-    </html>
-  `,
+    </html>`
 
 };
