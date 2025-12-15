@@ -96,7 +96,7 @@ export default function Employees() {
 
     if (filters.department !== 'all') {
       const deptLower = filters.department?.toLowerCase();
-      filtered = filtered.filter(emp => emp?.department.name.toLowerCase() === deptLower);
+      filtered = filtered.filter(emp => emp?.department?.name.toLowerCase() === deptLower);
     }
 
     if (filters.role !== 'all') {
@@ -104,7 +104,7 @@ export default function Employees() {
     }
 
     if (filters.branch !== 'all') {
-      filtered = filtered.filter(emp => emp?.branch.name.toLocaleLowerCase() === filters?.branch.toLocaleLowerCase());
+      filtered = filtered.filter(emp => emp?.branch?.name.toLocaleLowerCase() === filters?.branch.toLocaleLowerCase());
     }
 
     if (filters.status !== 'all') {
@@ -211,7 +211,7 @@ export default function Employees() {
 
     const res = await updateUser({
       ...updatedEmployee, department: updatedEmployee?.department, managerId: updatedEmployee?.managerId?._id, branch: updatedEmployee?.branch, _id: undefined, employeeId: undefined, leaveBalance: undefined, isActive: undefined, preferences: undefined, createdAt: undefined, updatedAt: undefined, __v: undefined
-    }, selectedEmployee._id);
+    }, selectedEmployee?._id);
 
     if (res.error) {
       addToast(res.error, 'error');
@@ -280,7 +280,7 @@ export default function Employees() {
             >
               <option value="all">All Departments</option>
               {departments?.map((dept) => (
-                <option key={dept._id} value={dept.name}>{dept.name}</option>
+                <option key={dept?._id} value={dept?.name}>{dept?.name}</option>
               ))}
             </select>
             <select
@@ -300,7 +300,7 @@ export default function Employees() {
             >
               <option value="all">All Branches</option>
               {branches.map((branch) => (
-                <option key={branch._id} value={branch.name} className='capitalize'>{branch.name}</option>
+                <option key={branch?._id} value={branch?.name} className='capitalize'>{branch?.name}</option>
               ))}
             </select>
             <select
@@ -330,7 +330,7 @@ export default function Employees() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {currentEmployees?.map((employee) => (
-                <tr key={employee._id} className="hover:bg-gray-50">
+                <tr key={employee?._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     {/* Employee info with new fields */}
                     <div className="flex items-center">
@@ -348,10 +348,10 @@ export default function Employees() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 capitalize">{employee.position}</div>
-                    <div className="text-sm text-gray-500 capitalize">{employee?.department.name}</div>
+                    <div className="text-sm text-gray-500 capitalize">{employee?.department?.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 capitalize">{employee?.branch.name}</div>
+                    <div className="text-sm text-gray-900 capitalize">{employee?.branch?.name}</div>
                     <div className="text-sm capitalize text-gray-500">{employee.levels}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -387,7 +387,7 @@ export default function Employees() {
                         <FiEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDeleteEmployee(employee._id)}
+                        onClick={() => handleDeleteEmployee(employee?._id)}
                         className="text-red-600 cursor-pointer hover:text-red-900 p-1"
                         title="Delete"
                       >

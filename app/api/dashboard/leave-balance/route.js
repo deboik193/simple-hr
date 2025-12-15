@@ -59,7 +59,8 @@ export const GET = withErrorHandler(async (req) => {
     if (userDetails.department) {
       const departmentUsers = await User.find({
         department: userDetails.department._id,
-        _id: { $ne: user._id }
+        _id: { $ne: user._id },
+        isActive: true
       }).lean();
 
       // Get all leave balances for department users

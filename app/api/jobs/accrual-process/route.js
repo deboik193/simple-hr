@@ -7,10 +7,9 @@ import LeavePolicy from "@/models/LeavePolicy";
 export const GET = withErrorHandler(async (req) => {
   await dbConnect();
 
-  // Prevent unauthorized access by adding the CRON_SECRET environment variable to your project and check incoming requests. Vercel will add it to all cron job invocations as part of the Authorization header, allowing you to specify any value you'd like for authorization.
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get('Authorization');
-  
+
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     throw new AppError('Unauthorized', 401);
   }
@@ -18,25 +17,34 @@ export const GET = withErrorHandler(async (req) => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
 
-  const balances = await LeaveBalance.find({ fiscalYear: currentYear });
+  // Single bulk update operation
+  const result = await LeaveBalance.updateMany(
+    {
+      fiscalYear: currentYear,
+      $or: [
+        { lastAccruedMonth: { $exists: false } },
+        { lastAccruedMonth: { $ne: currentMonth } }
+      ]
+    },
+    [
+      {
+        $set: {
+          balance: {
+            $min: [
+              { $add: ["$balance", "$accrualRate"] },
+              "$maxAccrual"
+            ]
+          },
+          lastAccruedMonth: currentMonth
+        }
+      }
+    ]
+  );
 
-  for (const balance of balances) {
+  console.log(`Accrual completed: ${result.modifiedCount} balances updated`);
 
-    // Prevent duplicate monthly accrual
-    if (balance.lastAccruedMonth === currentMonth) {
-      continue;
-    }
-
-    const newBalance = Math.min(
-      balance.balance + balance.accrualRate,
-      balance.maxAccrual
-    );
-
-    balance.balance = newBalance;
-    balance.lastAccruedMonth = currentMonth;
-
-    await balance.save();
-  }
-
-  return ApiResponse.success({}, 'Accrual process job completed');
+  return ApiResponse.success(
+    { updatedCount: result.modifiedCount },
+    'Accrual process job completed'
+  );
 });
