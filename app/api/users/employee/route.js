@@ -11,6 +11,7 @@ import { LEAVETYPE } from "@/constant/constant";
 import { emailService } from "@/libs/emailService";
 import LeaveBalance from "@/models/LeaveBalance";
 import LeavePolicy from "@/models/LeavePolicy";
+import mongoose from "mongoose";
 
 export const GET = withErrorHandler(async (req) => {
   await dbConnect();
