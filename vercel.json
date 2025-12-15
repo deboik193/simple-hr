@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/jobs/birtthday-alert",
-      "schedule": "25 13 * * 1"
+      "schedule": "0 6 * * 1"
     }
 
   ]
