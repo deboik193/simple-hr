@@ -159,10 +159,10 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
           <h2 className="text-xl font-semibold text-gray-900">New Leave Request</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-teal-100 rounded-lg transition-colors cursor-pointer"
             disabled={isSubmitting}
           >
-            <FiX size={20} />
+            <FiX size={20} className='text-teal-400'/>
           </button>
         </div>
 

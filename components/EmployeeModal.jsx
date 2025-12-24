@@ -60,11 +60,11 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
         fullName: employee.fullName,
         email: employee.email,
         role: employee.role,
-        department: employee.department._id,
+        department: employee.department?._id,
         position: employee.position,
         employmentType: employee.employmentType,
         joinDate: employee.joinDate.split('T')[0],
-        branch: employee.branch._id || '',
+        branch: employee.branch?._id || '',
         levels: employee.levels,
         managerId: employee.managerId?._id || '',
         teamLeadId: employee.teamLeadId?._id || undefined,
@@ -235,7 +235,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                 >
                   <option value="">Select Department</option>
                   {departments.map((dept) => (
-                    <option key={dept._id} value={dept._id} className='capitalize'>{dept.name}</option>
+                    <option key={dept?._id} value={dept?._id} className='capitalize'>{dept?.name}</option>
                   ))}
                 </select>
               </div>
@@ -289,7 +289,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                   >
                     <option value="">Select Branch</option>
                     {branches.map((branch) => (
-                      <option key={branch._id} value={branch._id} className='capitalize'>{branch.name}</option>
+                      <option key={branch?._id} value={branch?._id} className='capitalize'>{branch?.name}</option>
                     ))}
                   </select>
                 </div>
@@ -347,7 +347,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                   >
                     <option value="">Select Manager</option>
                     {managers.map((manager) => (
-                      <option key={manager._id} value={manager._id} className='capitalize'>{manager.fullName}</option>
+                      <option key={manager?._id} value={manager?._id} className='capitalize'>{manager?.fullName}</option>
                     ))}
                   </select>
                 </div>
@@ -366,7 +366,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                   >
                     <option value="">Select Team Lead</option>
                     {managers.map((manager) => (
-                      <option key={manager._id} value={manager._id} className='capitalize'>{manager.fullName}</option>
+                      <option key={manager?._id} value={manager?._id} className='capitalize'>{manager?.fullName}</option>
                     ))}
                   </select>
                 </div>

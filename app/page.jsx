@@ -210,9 +210,9 @@ export default function Dashboard() {
   const LeaveBalanceItem = ({ type, used, total, remaining }) => {
     const percentage = (used / total) * 100;
     const getColor = (percentage) => {
-      if (percentage > 75) return 'bg-red-500';
+      if (percentage > 75) return 'bg-green-500';
       if (percentage > 50) return 'bg-yellow-500';
-      return 'bg-green-500';
+      return 'bg-red-500';
     };
 
     return (

@@ -107,9 +107,9 @@ async function deductLeaveBalance(leaveRequest) {
 
     // Deduct the days
     await LeaveBalance.findOneAndUpdate(
-      { userId: employeeId, leaveType: leaveType },
+      { userId: employeeId, leaveType: leaveType, balance: { $gte: totalDays } },
       {
-        $inc: { balance: -totalDays },
+        $inc: { balance: -totalDays, totalUsed: +totalDays },
         $set: { lastUpdated: new Date() }
       },
       { session }

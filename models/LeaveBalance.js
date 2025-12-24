@@ -21,6 +21,7 @@ const leaveBalanceSchema = new mongoose.Schema({
   maxAccrual: Number,
   carryOverLimit: Number,
   carryOverUsed: Number,
+  totalUsed: { type: Number, default: 0 }, // Total leave taken this year
   fiscalYear: {
     type: Number,
     required: true
