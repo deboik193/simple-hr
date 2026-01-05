@@ -78,7 +78,7 @@ export default function Login() {
         localStorage.setItem('authToken', res?.data.token);
 
         const savedNav = localStorage.getItem('activeNav');
-        if (savedNav && savedNav !== '/auth/login') {
+        if (savedNav && savedNav.includes('/auth') === false) {
           window.location.href = savedNav;
         } else {
           // Redirect to dashboard
