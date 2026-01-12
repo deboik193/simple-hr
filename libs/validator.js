@@ -117,6 +117,21 @@ export const authValidation = {
     newPassword: commonSchemas.password.required()
   }),
 
+  updateProfile: Joi.object({
+    personalInfo: {
+      dateOfBirth: commonSchemas.dateOfBirth.optional(),
+      phoneNumber: commonSchemas.phone.optional(),
+      emergencyContact: {
+        phone: commonSchemas.phone.optional(),
+        name: commonSchemas.name.optional(),
+        relationship: Joi.string()
+          .trim()
+          .optional()
+      }
+    },
+    // teamLeadId: Joi.string().allow('').optional(),
+  }),
+
   registerUser: Joi.object({
     fullName: commonSchemas.name.required(),
     email: commonSchemas.email.required(),
@@ -240,7 +255,7 @@ export const authValidation = {
     approvalWorkflow: Joi.object({
       requireReliefOfficer: Joi.boolean().default(true),
       approvalLevels: Joi.array().items(
-        Joi.string().valid('manager', 'hr', 'department-head')
+        Joi.string().valid('manager', 'hr', 'admin', 'team-lead')
       ).default(['manager'])
     }).default({}),
     restrictions: Joi.object({

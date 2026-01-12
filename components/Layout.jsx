@@ -130,10 +130,10 @@ export default function Layout({ children }) {
             <span className="absolute -top-1 w-3 h-3 bg-red-500 rounded-full"></span>
           </div>
 
-          <div className="hidden sm:flex flex-col">
+          <Link href={`/profile?data=${encodeURIComponent(JSON.stringify(users))}`} className="hidden sm:flex flex-col">
             <div className="font-medium text-gray-700 text-sm lg:text-base capitalize">{users?.fullName}</div>
             <div className="text-xs text-gray-400 capitalize">{users?.role}</div>
-          </div>
+          </Link>
 
           {/* User Avatar for mobile */}
           <div className="sm:hidden w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">

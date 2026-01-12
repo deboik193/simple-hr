@@ -86,7 +86,7 @@ class EmailService {
     );
   }
 
-  async sendWelcomeEmail(user) {
+  async sendWelcomeEmail(user, tempPassword) {
     return this.sendEmail(
       user.email,
       'Welcome to Simple HR',
@@ -95,7 +95,7 @@ class EmailService {
         name: user.fullName,
         loginUrl: `${process.env.NEXTAUTH_URL}/auth/login`,
         username: user.email,
-        password: user.employeeId
+        password: tempPassword
       }
     );
   }

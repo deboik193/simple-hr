@@ -33,7 +33,6 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
   //  Add employeeId to user data before saving
   const updatedNewUser = await User.findByIdAndUpdate(id, value, { new: true, runValidators: true });
 
-
   return ApiResponse.success(updatedNewUser, 'Employee updated successfully');
 });
 

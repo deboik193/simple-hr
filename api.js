@@ -145,3 +145,7 @@ export const dashboardLeaveBalance = async () => {
 export const uploadCloudinary = async (data) => {
   return await fetchClient.post(`/api/upload`, data)
 }
+
+export const updateProfile = async (data) => {
+  return await fetchClient.patch(`/api/users/me`, data);
+}
