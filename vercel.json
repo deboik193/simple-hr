@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/jobs/accrual-process",
+      "schedule": "0 10 1 * *"
+    },
+    {
       "path": "/api/jobs/leave-carryover",
       "schedule": "0 3 1 1 *"
     },
