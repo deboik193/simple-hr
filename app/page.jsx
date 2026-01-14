@@ -315,7 +315,8 @@ export default function Dashboard() {
             <p className="text-sm text-gray-600">{birthday.department}</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-gray-500">
-                Turning {birthday.age + 1} years
+                {/* Turning {birthday.age + 1} years */}
+                will be +1 this year
               </span>
               {!justPassed && (
                 <span className="text-xs font-medium text-gray-700">
