@@ -129,7 +129,7 @@ export const authValidation = {
           .optional()
       }
     },
-    // teamLeadId: Joi.string().allow('').optional(),
+    joinDate: commonSchemas.joinDate.optional(),
   }),
 
   registerUser: Joi.object({

@@ -35,7 +35,8 @@ export default function ProfileEditPage() {
       name: '',
       relationship: '',
     },
-    teamLeadId: ''
+    teamLeadId: '',
+    joinDate: '',
   });
 
   useEffect(() => {
@@ -110,6 +111,7 @@ export default function ProfileEditPage() {
             phone: formData.emergencyContact.phone
           }
         },
+        joinDate: formData.joinDate
       };
 
       const response = await updateProfile(payload);
@@ -253,11 +255,12 @@ export default function ProfileEditPage() {
                 </label>
                 <div className="relative">
                   <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                  <div
+                  <input
+                    type="date"
+                    onChange={(e) => handleChange('joinDate', e.target.value)}
+                    value={formData.joinDate ? new Date(formData.joinDate).toISOString().split('T')[0] : ''}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 hover:border-gray-400"
-                  >
-                    {formData.joinDate}
-                  </div>
+                  />
                 </div>
               </div>
 
@@ -429,7 +432,7 @@ export default function ProfileEditPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-4">
+          <div className="flex gap-4">
             <Button
               type="button"
               size='large'
