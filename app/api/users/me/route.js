@@ -3,6 +3,7 @@ import dbConnect from "@/libs/mongodb"
 import User from "@/models/User";
 import { getAuthUser } from '@/libs/middleware';
 import Department from "@/models/Department";
+import Branch from "@/models/Branch";
 import path from "path";
 import { authValidation } from "@/libs/validator";
 
