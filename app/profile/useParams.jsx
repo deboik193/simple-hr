@@ -148,7 +148,7 @@ export default function ProfileEditPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <FiArrowLeft size={20} />
               </button>
@@ -251,7 +251,7 @@ export default function ProfileEditPage() {
               {/* Join Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Join Date
+                  Join Date(Editable)
                 </label>
                 <div className="relative">
                   <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />

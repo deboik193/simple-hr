@@ -18,6 +18,8 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
     joinDate: new Date().toISOString().split('T')[0],
     branch: '',
     levels: 'L1',
+    teamLeadId: undefined,
+    managerId: '',
     personalInfo: {
       dateOfBirth: '',
       phoneNumber: '',
@@ -105,7 +107,6 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-
       onSave(employee ? { ...employee, ...formData } : formData);
     }
   };

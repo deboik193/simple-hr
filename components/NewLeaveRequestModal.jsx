@@ -266,7 +266,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
             >
               <option value="">Select Relief Officer</option>
               {reliefOfficere.map((employee) => (
-                <option key={employee._id} value={employee._id}>
+                <option className='capitalize' key={employee._id} value={employee._id}>
                   {employee.fullName} ({employee.employeeId}) - {employee?.department.name}
                 </option>
               ))}

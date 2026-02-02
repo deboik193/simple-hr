@@ -23,7 +23,7 @@ const leavePolicySchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ACCRUAL,
-      default: 'monthly'
+      default: 'annual'
     },
     rate: Number,
     maxBalance: Number

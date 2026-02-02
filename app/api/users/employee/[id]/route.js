@@ -30,6 +30,13 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
     throw new AppError('User does not exist', 404);
   }
 
+  // sanitize input
+
+  // If teamLeadId is empty string or 'none', set to null
+  if (value.teamLeadId === '' || value.teamLeadId === 'none' || value.teamLeadId === 'null') {
+    value.teamLeadId = null;
+  }
+  
   //  Add employeeId to user data before saving
   const updatedNewUser = await User.findByIdAndUpdate(id, value, { new: true, runValidators: true });
 

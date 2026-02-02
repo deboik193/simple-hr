@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "generate-dummy-data": "node scripts/generateDummyUsers.js"
+    "generate-dummy-data": "node scripts/generateDummyUsers.js",
+    "update-leave-balances": "node scripts/updateZeroLeaveBalancesCollection.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
