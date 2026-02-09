@@ -210,7 +210,7 @@ export default function Employees() {
     setLoading(true);
 
     const res = await updateUser({
-      ...updatedEmployee, department: updatedEmployee?.department, managerId: updatedEmployee?.managerId?._id, branch: updatedEmployee?.branch, _id: undefined, employeeId: undefined, leaveBalance: undefined, isActive: undefined, preferences: undefined, createdAt: undefined, updatedAt: undefined, __v: undefined
+      ...updatedEmployee, department: updatedEmployee?.department, branch: updatedEmployee?.branch, _id: undefined, employeeId: undefined, leaveBalance: undefined, isActive: undefined, preferences: undefined, createdAt: undefined, updatedAt: undefined, __v: undefined
     }, selectedEmployee?._id);
 
     if (res.error) {
