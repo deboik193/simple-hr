@@ -313,7 +313,7 @@ export default function LeaveRequests() {
 
     const userRoles = {
       'relief-officer': request.status === 'pending-relief' &&
-        request.reliefOfficerId._id === currentUserId, // Add currentUserId from auth
+        request?.reliefOfficerId?._id === currentUserId, // Add currentUserId from auth
       'manager': request.status === 'pending-manager' &&
         request.employeeId.managerId === currentUserId,
       'hr': request.status === 'pending-hr',
@@ -461,10 +461,10 @@ export default function LeaveRequests() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 capitalize">
-                      {request.reliefOfficerId.fullName}
+                      {request?.reliefOfficerId?.fullName}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {request.reliefOfficerId.employeeId}
+                      {request?.reliefOfficerId?.employeeId}
                     </div>
                     {getReliefStatusBadge(request.reliefStatus)}
                   </td>

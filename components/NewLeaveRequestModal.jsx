@@ -93,9 +93,9 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
       newErrors.reason = 'Reason must be at least 10 characters';
     }
 
-    if (!formData.reliefOfficerId) {
-      newErrors.reliefOfficerId = 'Relief officer is required';
-    }
+    // if (!formData.reliefOfficerId) {
+    //   newErrors.reliefOfficerId = 'Relief officer is required';
+    // }
 
     if (!formData.handoverNotes.trim()) {
       newErrors.handoverNotes = 'Handover notes are required';
@@ -149,7 +149,7 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
   };
 
   const isFormValid = formData.startDate && formData.endDate && formData.reason &&
-    formData.reliefOfficerId && formData.handoverNotes && formData.urgentContact;
+    formData.handoverNotes && formData.urgentContact;
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center p-4 z-50">

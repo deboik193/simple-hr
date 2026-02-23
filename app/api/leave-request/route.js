@@ -225,19 +225,24 @@ export const POST = withErrorHandler(async (req) => {
     }
   }
 
-  // Ensure relief officer is in the same department (optional but recommended)
-  const reliefOfficerDetails = await User.findOne({ _id: value.reliefOfficerId })
-    .select('department')
-    .populate('department', 'name');
 
-  if (!reliefOfficerDetails.department._id.equals(department._id)) {
-    throw new AppError('Relief officer must be from the same department', 400);
-  }
+  if (value.reliefOfficerId) {
 
-  // Validate relief officer exists
-  const reliefOfficer = await User.findOne({ _id: value.reliefOfficerId, isActive: true });
-  if (!reliefOfficer) {
-    throw new AppError('Relief officer not found or inactive', 400);
+    // Ensure relief officer is in the same department (optional but recommended)
+    const reliefOfficerDetails = await User.findOne({ _id: value.reliefOfficerId })
+      .select('department')
+      .populate('department', 'name');
+
+    if (!reliefOfficerDetails?.department._id.equals(department._id)) {
+      throw new AppError('Relief officer must be from the same department', 400);
+    }
+
+
+    // Validate relief officer exists
+    const reliefOfficer = await User.findOne({ _id: value.reliefOfficerId, isActive: true });
+    if (!reliefOfficer) {
+      throw new AppError('Relief officer not found or inactive', 400);
+    }
   }
 
   // Get applicable leave policy
@@ -354,19 +359,22 @@ export const POST = withErrorHandler(async (req) => {
     throw new AppError('You have an overlapping leave request during this period', 400);
   }
 
-  // 8. Check if relief officer is available during the requested period
-  const reliefOfficerBusy = await LeaveRequest.findOne({
-    $or: [
-      { employeeId: value.reliefOfficerId },
-      { reliefOfficerId: value.reliefOfficerId }
-    ],
-    status: { $in: ['pending-relief', 'pending-manager', 'pending-hr', 'approved'] },
-    startDate: { $lte: value.endDate },
-    endDate: { $gte: value.startDate }
-  });
+  if (value.reliefOfficerId) {
 
-  if (reliefOfficerBusy) {
-    throw new AppError('Relief officer is not available during the requested leave period', 400);
+    // 8. Check if relief officer is available during the requested period
+    const reliefOfficerBusy = await LeaveRequest.findOne({
+      $or: [
+        { employeeId: value.reliefOfficerId },
+        { reliefOfficerId: value.reliefOfficerId }
+      ],
+      status: { $in: ['pending-relief', 'pending-manager', 'pending-hr', 'approved'] },
+      startDate: { $lte: value.endDate },
+      endDate: { $gte: value.startDate }
+    });
+
+    if (reliefOfficerBusy) {
+      throw new AppError('Relief officer is not available during the requested leave period', 400);
+    }
   }
 
   // 9. Determine status based on policy requirements
@@ -374,7 +382,7 @@ export const POST = withErrorHandler(async (req) => {
   let reliefStatus = 'approved';
 
   // If policy requires relief officer approval
-  if (leavePolicy.approvalWorkflow.requireReliefOfficer) {
+  if (leavePolicy.approvalWorkflow.requireReliefOfficer && value.reliefOfficerId) {
     reliefStatus = 'pending';
     status = 'pending-relief'; // or 'pending-relief' based on your STATUS enum
   }
@@ -388,7 +396,7 @@ export const POST = withErrorHandler(async (req) => {
       throw new AppError('Leave must be booked within the current year as per the leave policy', 400);
     }
   }
-  
+
   // Create approval history initial entry
   const approvalHistory = [{
     approvedBy: user._id,
@@ -397,6 +405,11 @@ export const POST = withErrorHandler(async (req) => {
     notes: 'Leave request submitted',
     timestamp: new Date()
   }];
+
+  // If teamLeadId is empty string or 'none', set to null
+  if (value.reliefOfficerId === '' || value.reliefOfficerId === 'none' || value.reliefOfficerId === 'null') {
+    value.reliefOfficerId = null;
+  }
 
   const payload = {
     ...value,
@@ -408,7 +421,7 @@ export const POST = withErrorHandler(async (req) => {
     // Include policy reference for tracking
     policyId: leavePolicy._id
   };
-
+   
   // Create leave request
   const leaveRequest = await LeaveRequest.create(payload);
 
@@ -416,7 +429,9 @@ export const POST = withErrorHandler(async (req) => {
   await leaveRequest.populate('employeeId', 'fullName email employeeId');
   await leaveRequest.populate('reliefOfficerId', 'fullName email employeeId');
 
-  await emailService.notifyReliefOfficer(userDetails, reliefOfficer);
+  if (value.reliefOfficerId) {
+    await emailService.notifyReliefOfficer(userDetails, reliefOfficer);
+  }
 
   return ApiResponse.success(leaveRequest, 'Leave request submitted successfully');
 });

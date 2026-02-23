@@ -37,8 +37,7 @@ const leaveRequestSchema = new mongoose.Schema({
   // Relief Officer System
   reliefOfficerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   reliefStatus: {
     type: String,

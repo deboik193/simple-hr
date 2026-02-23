@@ -291,7 +291,7 @@ export const authValidation = {
     endDate: Joi.date().required(),
     totalDays: Joi.number().required(),
     reason: Joi.string().required(),
-    reliefOfficerId: Joi.string().required(),
+    reliefOfficerId: Joi.string().allow('').optional(),
     additionalFile: Joi.string().optional(),
     handoverNotes: Joi.string().optional(),
     urgentContact: Joi.string().optional(),
