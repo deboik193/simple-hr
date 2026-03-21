@@ -597,6 +597,7 @@ export default function LeaveRequests() {
         <NewLeaveRequestModal
           onSave={handleNewRequest}
           onClose={() => setShowNewRequestModal(false)}
+          userRole={userRole}
         />
       )}
     </div>

@@ -183,6 +183,7 @@ export default function Settings() {
 
   const handleDepartmentSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     if (editingDepartment) {
       // Update existing department

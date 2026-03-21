@@ -295,7 +295,9 @@ export const authValidation = {
     additionalFile: Joi.string().optional(),
     handoverNotes: Joi.string().optional(),
     urgentContact: Joi.string().optional(),
-
+    // HR/Admin can create leave on behalf of staff
+    employeeId: Joi.string().optional(),
+    createdByHr: Joi.boolean().optional(),
   }),
 
   approvalHistory: Joi.object({

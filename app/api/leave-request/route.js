@@ -99,11 +99,27 @@ export const POST = withErrorHandler(async (req) => {
   const { error, value } = authValidation.leaveRequest.validate(body);
   if (error) throw new AppError('Validation error: ' + error.details[0].message, 400);
 
-  // Get user details
-  const userDetails = await User.findOne({ _id: user._id }).select('employeeId employmentType joinDate department branch email fullName').populate('department').populate('branch');
-  if (!userDetails) throw new AppError('User details not found', 404);
+  // Check if HR or Admin is creating leave on behalf of staff
+  const isHrOrAdmin = ['hr', 'admin'].includes(user.role);
+  let targetEmployeeId = user._id;
+  let targetUserDetails = null;
+  let createdByHr = false;
 
-  const { employmentType, joinDate, department, branch, _id } = userDetails;
+  if (isHrOrAdmin && value.employeeId) {
+    // HR/Admin is creating leave on behalf of a staff member
+    targetEmployeeId = value.employeeId;
+    createdByHr = true;
+
+    // Get the target employee's details
+    targetUserDetails = await User.findOne({ _id: value.employeeId }).select('employeeId employmentType joinDate department branch email fullName').populate('department').populate('branch');
+    if (!targetUserDetails) throw new AppError('Employee not found', 404);
+  } else {
+    // Get user details for the current user
+    targetUserDetails = await User.findOne({ _id: user._id }).select('employeeId employmentType joinDate department branch email fullName').populate('department').populate('branch');
+    if (!targetUserDetails) throw new AppError('User details not found', 404);
+  }
+
+  const { employmentType, joinDate, department, branch, _id } = targetUserDetails;
   // Check if user's department is active
   if (!department || !department.isActive) {
     throw new AppError('Your department is not active. Cannot apply for leave.', 400);
@@ -329,9 +345,9 @@ export const POST = withErrorHandler(async (req) => {
 
   const totalDays = calculateWorkingDays(value.startDate, value.endDate);
 
-  // 6. Check leave balance
+  // 6. Check leave balance (use target employee's balance)
   const leaveBalance = await LeaveBalance.findOne({
-    userId: user._id,
+    userId: targetEmployeeId,
     leaveType: value.leaveType
   });
 
@@ -343,9 +359,9 @@ export const POST = withErrorHandler(async (req) => {
     );
   }
 
-  // 7. Check for overlapping leave requests
+  // 7. Check for overlapping leave requests (use target employee's existing requests)
   const overlappingLeave = await LeaveRequest.findOne({
-    employeeId: user._id,
+    employeeId: targetEmployeeId,
     status: { $in: ['pending-relief', 'pending-manager', 'pending-hr', 'approved'] }, // Using your STATUS enum values
     $or: [
       {
@@ -356,7 +372,7 @@ export const POST = withErrorHandler(async (req) => {
   });
 
   if (overlappingLeave) {
-    throw new AppError('You have an overlapping leave request during this period', 400);
+    throw new AppError('There is an overlapping leave request during this period', 400);
   }
 
   if (value.reliefOfficerId) {
@@ -398,11 +414,15 @@ export const POST = withErrorHandler(async (req) => {
   }
 
   // Create approval history initial entry
+  const approvalNotes = createdByHr
+    ? `Leave request submitted by ${user.role === 'hr' ? 'HR' : 'Admin'} on behalf of employee`
+    : 'Leave request submitted';
+
   const approvalHistory = [{
-    approvedBy: user._id,
-    role: 'applicant',
+    approvedBy: createdByHr ? user._id : targetEmployeeId,
+    role: createdByHr ? (user.role === 'admin' ? 'hr' : user.role) : 'applicant',
     action: 'submitted',
-    notes: 'Leave request submitted',
+    notes: approvalNotes,
     timestamp: new Date()
   }];
 
@@ -413,25 +433,40 @@ export const POST = withErrorHandler(async (req) => {
 
   const payload = {
     ...value,
-    employeeId: _id,
+    employeeId: targetEmployeeId,
     totalDays,
     status,
     reliefStatus,
     approvalHistory,
     // Include policy reference for tracking
-    policyId: leavePolicy._id
+    policyId: leavePolicy._id,
+    // Track who created this leave request
+    createdBy: createdByHr ? user._id : targetEmployeeId,
+    createdByHr: createdByHr
   };
-   
+
   // Create leave request
   const leaveRequest = await LeaveRequest.create(payload);
 
   // Populate the response with user details
   await leaveRequest.populate('employeeId', 'fullName email employeeId');
   await leaveRequest.populate('reliefOfficerId', 'fullName email employeeId');
+  await leaveRequest.populate('createdBy', 'fullName email employeeId');
 
   if (value.reliefOfficerId) {
-    await emailService.notifyReliefOfficer(userDetails, reliefOfficer);
+    const reliefOfficer = await User.findOne({ _id: value.reliefOfficerId });
+    await emailService.notifyReliefOfficer(targetUserDetails, reliefOfficer);
   }
 
-  return ApiResponse.success(leaveRequest, 'Leave request submitted successfully');
+  // If HR/Admin created the leave, send notification to the employee
+  if (createdByHr) {
+    // The leave request has been created successfully
+    // The employee will be notified through the normal approval workflow
+  }
+
+  const successMessage = createdByHr
+    ? `Leave request created successfully for ${targetUserDetails.fullName}. It will go through the normal approval workflow.`
+    : 'Leave request submitted successfully';
+
+  return ApiResponse.success(leaveRequest, successMessage);
 });

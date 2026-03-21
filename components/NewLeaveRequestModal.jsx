@@ -1,18 +1,18 @@
 // components/NewLeaveRequestModal.js
 'use client';
 
-import { getAllUser, requestLeave } from '../api';
+import { getAllUser, requestLeave, getEmployees } from '../api';
 import { useState, useEffect } from 'react';
 import {
   FiX, FiCalendar, FiPhone,
-  FiClock, FiAlertCircle
+  FiClock, FiAlertCircle, FiUser
 } from 'react-icons/fi';
 import { LEAVETYPE } from '@/constant/constant';
 import CloudinaryFileUpload from './CloudinaryFileUpload';
 import Button from './Button';
 import { useToast } from '@/context/toastContext';
 
-export default function NewLeaveRequestModal({ onSave, onClose }) {
+export default function NewLeaveRequestModal({ onSave, onClose, userRole }) {
   const [formData, setFormData] = useState({
     leaveType: 'annual',
     startDate: '',
@@ -20,21 +20,35 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
     reason: '',
     reliefOfficerId: '',
     handoverNotes: '',
-    urgentContact: ''
+    urgentContact: '',
+    employeeId: '' // For HR/Admin to select employee
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [totalDays, setTotalDays] = useState(0);
   const [reliefOfficere, setReliefOfficer] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const { addToast } = useToast();
+
+  // Check if current user is HR or Admin
+  const isHrOrAdmin = ['hr', 'admin'].includes(userRole);
 
   const reliefOfficers = async () => {
     const res = await getAllUser();
     setReliefOfficer(res.data)
   }
 
+  // Fetch employees for HR/Admin to select
+  const fetchEmployees = async () => {
+    if (isHrOrAdmin) {
+      const res = await getEmployees();
+      setEmployees(res.data);
+    }
+  }
+
   useEffect(() => {
     reliefOfficers();
+    fetchEmployees();
 
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
@@ -71,6 +85,11 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
   const validateForm = () => {
     const newErrors = {};
 
+    // HR/Admin must select an employee
+    if (isHrOrAdmin && !formData.employeeId) {
+      newErrors.employeeId = 'Please select an employee';
+    }
+
     if (!formData.leaveType) {
       newErrors.leaveType = 'Leave type is required';
     }
@@ -92,10 +111,6 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
     } else if (formData.reason.trim().length < 10) {
       newErrors.reason = 'Reason must be at least 10 characters';
     }
-
-    // if (!formData.reliefOfficerId) {
-    //   newErrors.reliefOfficerId = 'Relief officer is required';
-    // }
 
     if (!formData.handoverNotes.trim()) {
       newErrors.handoverNotes = 'Handover notes are required';
@@ -156,18 +171,54 @@ export default function NewLeaveRequestModal({ onSave, onClose }) {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">New Leave Request</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {isHrOrAdmin ? 'Create Leave Request for Employee' : 'New Leave Request'}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-teal-100 rounded-lg transition-colors cursor-pointer"
             disabled={isSubmitting}
           >
-            <FiX size={20} className='text-teal-400'/>
+            <FiX size={20} className='text-teal-400' />
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Employee Selector for HR/Admin */}
+          {isHrOrAdmin && (
+            <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FiUser className="text-teal-600" size={18} />
+                <span className="font-medium text-teal-800">Create Leave on Behalf of Employee</span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-teal-700 mb-2">
+                  Select Employee *
+                </label>
+                <select
+                  value={formData.employeeId}
+                  onChange={(e) => handleChange('employeeId', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${errors.employeeId ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                >
+                  <option value="">Select an employee</option>
+                  {employees.map((employee) => (
+                    <option className='capitalize' key={employee._id} value={employee._id}>
+                      {employee.fullName} ({employee.employeeId}) - {employee?.department?.name || 'No Department'}
+                    </option>
+                  ))}
+                </select>
+                {errors.employeeId && (
+                  <p className="mt-1 text-sm text-red-600">{errors.employeeId}</p>
+                )}
+                <p className="mt-1 text-sm text-teal-600">
+                  The leave request will be created for the selected employee and will go through the normal approval workflow.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Leave Type & Dates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Leave Type */}

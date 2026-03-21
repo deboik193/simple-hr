@@ -8,6 +8,16 @@ const leaveRequestSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  // Track who created the leave request (for HR/Admin created requests)
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  // Flag to indicate if this was created by HR/Admin on behalf of staff
+  createdByHr: {
+    type: Boolean,
+    default: false
+  },
   leaveType: {
     type: String,
     enum: LEAVETYPE,
