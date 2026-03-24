@@ -61,7 +61,6 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
     },
     { new: true }
   ).populate('employeeId', 'fullName email employeeId')
-    .populate('reliefOfficerId', 'fullName email')
 
   // 5. Notify all parties
   await emailService.notifyFinalApproval(updatedRequest);

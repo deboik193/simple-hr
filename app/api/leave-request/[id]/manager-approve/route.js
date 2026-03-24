@@ -28,10 +28,15 @@ export const PATCH = withErrorHandler(async (req, { params }) => {
     throw new AppError('Leave request not found', 404);
   }
 
-  // 2. Verify the user is the employee's manager
+  // 2. Verify the user is the employee's manager / hr / admin
   const employee = await User.findById(leaveRequest.employeeId);
-  if (!employee.managerId || !employee.managerId.equals(user._id)) {
-    throw new AppError('You are not the manager for this employee', 403);
+  
+  const isManager = employee.managerId && employee.managerId.equals(user._id);
+  const isHr = user.role === 'hr';
+  const isAdmin = user.role === 'admin';
+
+  if (!isManager && !isHr && !isAdmin) {
+    throw new AppError('You are not authorized to approve this leave request', 403);
   }
 
   // 3. Verify the request is in correct status

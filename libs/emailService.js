@@ -179,6 +179,7 @@ class EmailService {
   }
 
   async notifyFinalApproval(leaveRequest) {
+    
     const { employeeId, reliefOfficerId, startDate, endDate } = leaveRequest;
     return this.sendEmail(
       [employeeId.email, reliefOfficerId.email],
