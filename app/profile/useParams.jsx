@@ -49,7 +49,7 @@ export default function ProfileEditPage() {
       levels: searchParamsObj.levels || '',
       role: searchParamsObj.role || '',
       position: searchParamsObj.position || '',
-      joinDate: searchParamsObj.joinDate ? new Date(searchParamsObj.joinDate).toLocaleDateString() : '',
+      joinDate: searchParamsObj.joinDate ? new Date(searchParamsObj?.joinDate).toLocaleDateString() : '',
       employeeId: searchParamsObj.employeeId || '',
       employementType: searchParamsObj.employmentType || '',
       department: searchParamsObj.department?.name || '',
@@ -233,7 +233,7 @@ export default function ProfileEditPage() {
                     type="date"
                     value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''}
                     onChange={(e) => handleChange('dateOfBirth', e.target.value)}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={new Date()?.toISOString().split('T')[0]}
                     className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500`}
                   />
                 </div>
@@ -258,7 +258,7 @@ export default function ProfileEditPage() {
                   <input
                     type="date"
                     onChange={(e) => handleChange('joinDate', e.target.value)}
-                    value={formData.joinDate ? new Date(formData.joinDate).toISOString().split('T')[0] : ''}
+                    value={formData.joinDate ? formData.joinDate?.split('T')[0] : ''}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 hover:border-gray-400"
                   />
                 </div>
