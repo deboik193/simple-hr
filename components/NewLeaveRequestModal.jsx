@@ -132,8 +132,13 @@ export default function NewLeaveRequestModal({ onSave, onClose, userRole }) {
     setIsSubmitting(true);
 
     try {
+      const { employeeId, ...restFormData } = formData;
 
-      const res = await requestLeave({ ...formData, totalDays })
+      const res = await requestLeave({
+        ...(employeeId && { employeeId }), // Only add if truthy
+        ...restFormData,
+        totalDays
+      })
 
       if (res?.error) {
         addToast(res?.error, 'error')
