@@ -74,19 +74,19 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
               <div className="space-y-2">
                 <div>
                   <p className="text-sm text-gray-600">Name</p>
-                  <p className="font-medium text-gray-900">{request.employeeId.fullName}</p>
+                  <p className="font-medium text-gray-900">{request?.employeeId?.fullName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Employee ID</p>
-                  <p className="font-medium text-gray-900">{request.employeeId.employeeId}</p>
+                  <p className="font-medium text-gray-900">{request?.employeeId?.employeeId}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Department</p>
-                  <p className="font-medium text-gray-900">{request.employeeId.department.name}</p>
+                  <p className="font-medium text-gray-900">{request?.employeeId?.department?.name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Position</p>
-                  <p className="font-medium text-gray-900 capitalize">{request.employeeId.position}</p>
+                  <p className="font-medium text-gray-900 capitalize">{request?.employeeId?.position}</p>
                 </div>
               </div>
             </div>
@@ -100,29 +100,29 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
               <div className="space-y-2">
                 <div>
                   <p className="text-sm text-gray-600">Leave Type</p>
-                  <p className="font-medium text-gray-900 capitalize">{request.leaveType}</p>
+                  <p className="font-medium text-gray-900 capitalize">{request?.leaveType}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Duration</p>
                   <p className="font-medium text-gray-900">
-                    {request.totalDays} day{request.totalDays !== 1 ? 's' : ''}
+                    {request?.totalDays} day{request?.totalDays !== 1 ? 's' : ''}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Start Date</p>
                   <p className="font-medium text-gray-900">
-                    {new Date(request.startDate).toLocaleDateString()}
+                    {new Date(request?.startDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">End Date</p>
                   <p className="font-medium text-gray-900">
-                    {new Date(request.endDate).toLocaleDateString()}
+                    {new Date(request?.endDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Current Status</p>
-                  <p className="font-medium text-gray-900">{getStatusDisplay(request.status)}</p>
+                  <p className="font-medium text-gray-900">{getStatusDisplay(request?.status)}</p>
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
                   <FiFileText className="text-teal-600" />
                   Reason for Leave
                 </h3>
-                <p className="text-gray-700">{request.reason}</p>
+                <p className="text-gray-700">{request?.reason}</p>
               </div>
             }
 
@@ -158,7 +158,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
                     <FiPhone size={14} />
                     Urgent Contact
                   </p>
-                  <p className="font-medium text-gray-900">{request.urgentContact}</p>
+                  <p className="font-medium text-gray-900">{request?.urgentContact}</p>
                 </div>
               )}
             </div>
@@ -173,16 +173,16 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">Assigned Officer</p>
-                <p className="font-medium text-gray-900">{request.reliefOfficerId.fullName}</p>
-                <p className="text-sm text-gray-500">{request.reliefOfficerId.employeeId}</p>
+                <p className="font-medium text-gray-900">{request?.reliefOfficerId?.fullName}</p>
+                <p className="text-sm text-gray-500">{request?.reliefOfficerId?.employeeId}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Status</p>
-                <p className="font-medium text-gray-900 capitalize">{request.reliefStatus}</p>
-                {request.reliefNotes && (
+                <p className="font-medium text-gray-900 capitalize">{request?.reliefStatus}</p>
+                {request?.reliefNotes && (
                   <div className="mt-2">
                     <p className="text-sm text-gray-600">Relief Notes</p>
-                    <p className="text-sm text-gray-700">{request.reliefNotes}</p>
+                    <p className="text-sm text-gray-700">{request?.reliefNotes}</p>
                   </div>
                 )}
               </div>
@@ -200,32 +200,32 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
                 <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-200">
                   <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-medium text-teal-600">
-                      {history.approvedBy.fullName.split(' ').map(n => n[0]).join('')}
+                      {history?.approvedBy?.fullName.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900 capitalize">{history.approvedBy.fullName}</p>
-                      <span className="text-xs text-gray-500 capitalize">{getRoleDisplay(history.role)}</span>
+                      <p className="font-medium text-gray-900 capitalize">{history?.approvedBy?.fullName}</p>
+                      <span className="text-xs text-gray-500 capitalize">{getRoleDisplay(history?.role)}</span>
                     </div>
-                    <p className="text-sm text-gray-700 capitalize">{getActionDisplay(history.action)}</p>
-                    {history.notes && (
-                      <p className="text-sm text-gray-600 mt-1">{history.notes}</p>
+                    <p className="text-sm text-gray-700 capitalize">{getActionDisplay(history?.action)}</p>
+                    {history?.notes && (
+                      <p className="text-sm text-gray-600 mt-1">{history?.notes}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      {new Date(history.timestamp).toLocaleString()}
+                      {new Date(history?.timestamp).toLocaleString()}
                     </p>
                   </div>
                 </div>
               ))}
-              {request.approvalHistory.length === 0 && (
+              {request?.approvalHistory?.length === 0 && (
                 <p className="text-gray-500 text-center py-4">No approval history yet</p>
               )}
             </div>
           </div>
 
           {/* Action Buttons */}
-          {request?.status.includes('pending') && request.reliefStatus !== 'declined' &&
+          {request?.status?.includes('pending') && request?.reliefStatus !== 'declined' &&
             <>
               <div className="flex gap-3 pt-6 border-t border-gray-200">
                 <Button
