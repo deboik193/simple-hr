@@ -132,7 +132,7 @@ export default function LeaveRequestDetail({ request, onClose, onAction, canTake
           <div className="grid grid-cols-1 gap-6">
             {/* Reason */}
 
-            {decoded?.id === request?.reliefOfficerId._id ? '' :
+            {decoded?.id === request?.reliefOfficerId?._id ? '' :
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
