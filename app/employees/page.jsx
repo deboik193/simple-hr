@@ -134,7 +134,7 @@ export default function Employees() {
   const totalPages = Math.ceil(filteredEmployees?.length / itemsPerPage);
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => ({ ...prev, [key]: value.toLocaleLowerCase() }));
   };
 
   const getRoleBadge = (role) => {
@@ -245,6 +245,7 @@ export default function Employees() {
           <h1 className="text-2xl font-bold text-gray-900">Employees</h1>
           <p className="text-gray-600">Manage employee information and access</p>
         </div>
+
         <Button
           icon={FiPlus}
           size='large'
@@ -352,7 +353,7 @@ export default function Employees() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 capitalize">{employee?.branch?.name}</div>
-                    <div className="text-sm capitalize text-gray-500">{employee.levels}</div>
+                    <div className="text-sm capitalize text-gray-500"> {getLevelBadge(employee.levels)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col gap-1">

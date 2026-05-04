@@ -348,7 +348,7 @@ export default function EmployeeModal({ employee, onSave, onClose, loading }) {
                   >
                     <option value="">Select Manager</option>
                     {managers.map((manager) => (
-                      <option key={manager?._id} value={manager?._id} className='capitalize'>{manager?.fullName}</option>
+                      <option key={manager?._id} value={manager?._id} className='capitalize'>{manager?.fullName} - {manager?.position}</option>
                     ))}
                   </select>
                 </div>

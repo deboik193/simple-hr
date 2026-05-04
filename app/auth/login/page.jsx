@@ -27,8 +27,9 @@ export default function Login() {
     (v) => !!v || 'Password is required',
   ];
 
+  // convert to lowercase on change and validate email format
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value.toLocaleLowerCase() }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }

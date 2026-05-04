@@ -30,7 +30,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      const res = await forgotPassword({ email });
+      const res = await forgotPassword({ email: email.toLocaleLowerCase() });
 
       if (res.error) {
         addToast(res.error, 'error');
