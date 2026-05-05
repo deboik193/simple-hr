@@ -37,7 +37,7 @@ function ResetPasswordContent() {
   }, [token, router]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value.toLowerCase() }));
+    setFormData(prev => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
     if (errors[field]) {

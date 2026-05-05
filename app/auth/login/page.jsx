@@ -29,7 +29,7 @@ export default function Login() {
 
   // convert to lowercase on change and validate email format
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value.toLocaleLowerCase() }));
+    setFormData(prev => ({ ...prev, [field]: value}));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
